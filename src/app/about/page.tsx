@@ -1,5 +1,4 @@
 // app/about/page.jsx
-import Image from "next/image";
 import Link from "next/link";
 
 // Import shadcn components
@@ -8,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
