@@ -7,8 +7,8 @@ export default async function RoleSelectionPage() {
   if (!user) redirect("/sign-in");
 
   const role = user.sessionClaims?.metadata.role;
-  if (role == "user") {
-    redirect("/onboarding/user");
+  if (role == "user" && user.sessionClaims?.metadata.onboardingComplete) {
+    redirect("/");
   } else if (role == "businessOwner") {
     redirect("/onboarding/business");
   } else if (role == "admin") {

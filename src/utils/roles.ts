@@ -1,5 +1,5 @@
 import { Roles } from "@/types/globals";
-import { auth, User } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 
 export const checkRole = async (role: Roles) => {
   const { sessionClaims } = await auth();

@@ -19,14 +19,16 @@ import {
 import { cn } from "@/lib/utils";
 import { SignedIn, SignedOut, SignOutButton, UserButton } from "@clerk/nextjs";
 import {
-  BookOpen,
+  Calendar,
+  Gem,
+  Heart,
+  Home,
+  Info,
   MapPin,
   Menu,
   Search,
-  SearchCheck,
   Star,
-  Store,
-  User,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
@@ -41,9 +43,8 @@ const Nav = () => {
           href="/"
           className="flex gap-2 items-center text-xl font-bold justify-center"
         >
-          <BookOpen className="text-yellow-600" size={28} />
-          <span className="hidden sm:inline"> St. Louis, MO Directory</span>
-          <span className="sm:hidden"> STL Directory</span>
+          <Gem className="text-yellow-600" size={28} />
+          <span>STL Wedding Hub</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -53,37 +54,36 @@ const Nav = () => {
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Explore</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid gap-3 p-4 w-[400px] md:w-[500px] lg:w-[600px] grid-cols-2">
+                  <ul className="grid gap-3 p-4 w-[300px] md:w-[400px] lg:w-[500px] grid-cols-2">
                     <li className="row-span-3">
                       <NavigationMenuLink asChild>
                         <a
                           className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-yellow-500 to-yellow-700 p-6 no-underline outline-none focus:shadow-md"
-                          href="/featured"
+                          href="/featured-vendors"
                         >
                           <div className="mt-4 mb-2 text-lg font-medium text-white">
-                            Featured Businesses
+                            Featured Vendors
                           </div>
                           <p className="text-sm leading-tight text-white/90">
-                            Discover the most loved local businesses in St.
-                            Louis
+                            Discover top St. Louis wedding professionals
                           </p>
                         </a>
                       </NavigationMenuLink>
                     </li>
                     <CategoryLink
-                      href="/categories/restaurants"
-                      title="Restaurants"
-                      icon={<Store className="h-4 w-4" />}
-                    />
-                    <CategoryLink
-                      href="/categories/services"
-                      title="Services"
-                      icon={<User className="h-4 w-4" />}
-                    />
-                    <CategoryLink
-                      href="/categories/neighborhoods"
-                      title="Neighborhoods"
+                      href="/categories/venues"
+                      title="Venues"
                       icon={<MapPin className="h-4 w-4" />}
+                    />
+                    <CategoryLink
+                      href="/categories/photographers"
+                      title="Photographers"
+                      icon={<Camera className="h-4 w-4" />}
+                    />
+                    <CategoryLink
+                      href="/categories/caterers"
+                      title="Caterers"
+                      icon={<Utensils className="h-4 w-4" />}
                     />
                     <CategoryLink
                       href="/top-rated"
@@ -92,6 +92,28 @@ const Nav = () => {
                     />
                   </ul>
                 </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/planning-tools"
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    Planning Tools
+                  </Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/inspiration"
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    Inspiration
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
 
               <NavigationMenuItem>
@@ -108,10 +130,11 @@ const Nav = () => {
           <SignedIn>
             <div className="flex items-center gap-4">
               <Link
-                href="/dashboard"
-                className={buttonVariants({ variant: "outline", size: "sm" })}
+                href="/favorites"
+                className={buttonVariants({ variant: "ghost", size: "icon" })}
+                title="Favorites"
               >
-                Dashboard
+                <Heart size={20} />
               </Link>
               <UserButton afterSignOutUrl="/" />
             </div>
@@ -141,6 +164,15 @@ const Nav = () => {
             <Search size={20} />
           </Link>
 
+          <SignedIn>
+            <Link
+              href="/favorites"
+              className={buttonVariants({ variant: "ghost", size: "icon" })}
+            >
+              <Heart size={20} />
+            </Link>
+          </SignedIn>
+
           <Sheet>
             <SheetTrigger
               className={buttonVariants({ variant: "outline", size: "icon" })}
@@ -149,8 +181,10 @@ const Nav = () => {
             </SheetTrigger>
             <SheetContent>
               <SheetHeader>
-                <SheetTitle>St. Louis Directory</SheetTitle>
-                <SheetDescription>Discover local businesses</SheetDescription>
+                <SheetTitle>STL Wedding Hub</SheetTitle>
+                <SheetDescription>
+                  Find wedding professionals in St. Louis
+                </SheetDescription>
               </SheetHeader>
               <div className="flex flex-col gap-4 py-4">
                 <SheetClose asChild>
@@ -158,54 +192,57 @@ const Nav = () => {
                     href="/"
                     className="flex items-center py-2 px-3 rounded-lg hover:bg-gray-100"
                   >
+                    <Home className="h-4 w-4 mr-2" />
                     Home
                   </Link>
                 </SheetClose>
+
                 <SheetClose asChild>
                   <Link
-                    href="/featured"
+                    href="/featured-vendors"
                     className="flex items-center py-2 px-3 rounded-lg hover:bg-gray-100"
                   >
-                    Featured Businesses
+                    <Star className="h-4 w-4 mr-2" />
+                    Featured Vendors
                   </Link>
                 </SheetClose>
+
                 <SheetClose asChild>
                   <Link
-                    href="/categories/restaurants"
+                    href="/categories"
                     className="flex items-center py-2 px-3 rounded-lg hover:bg-gray-100"
                   >
-                    Restaurants
+                    <Users className="h-4 w-4 mr-2" />
+                    Vendor Categories
                   </Link>
                 </SheetClose>
+
                 <SheetClose asChild>
                   <Link
-                    href="/categories/services"
+                    href="/planning-tools"
                     className="flex items-center py-2 px-3 rounded-lg hover:bg-gray-100"
                   >
-                    Services
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Planning Tools
                   </Link>
                 </SheetClose>
+
                 <SheetClose asChild>
                   <Link
-                    href="/categories/neighborhoods"
+                    href="/inspiration"
                     className="flex items-center py-2 px-3 rounded-lg hover:bg-gray-100"
                   >
-                    Neighborhoods
+                    <Heart className="h-4 w-4 mr-2" />
+                    Inspiration
                   </Link>
                 </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href="/top-rated"
-                    className="flex items-center py-2 px-3 rounded-lg hover:bg-gray-100"
-                  >
-                    Top Rated
-                  </Link>
-                </SheetClose>
+
                 <SheetClose asChild>
                   <Link
                     href="/about"
                     className="flex items-center py-2 px-3 rounded-lg hover:bg-gray-100"
                   >
+                    <Info className="h-4 w-4 mr-2" />
                     About
                   </Link>
                 </SheetClose>
@@ -257,7 +294,45 @@ const Nav = () => {
   );
 };
 
-// Properly implemented ListItem component following shadcn patterns
+// Camera and Utensils icons for the dropdown menu
+const Camera: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+    <circle cx="12" cy="13" r="3" />
+  </svg>
+);
+
+const Utensils: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+    <path d="M7 2v20" />
+    <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+  </svg>
+);
+
+// Properly implemented CategoryLink component following shadcn patterns
 const CategoryLink = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a"> & {

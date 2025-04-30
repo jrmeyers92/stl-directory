@@ -1,12 +1,12 @@
 import BusinessCTA from "@/components/BusinessCTA";
+import CategoryBrowseSection from "@/components/CategoryBrowseSection";
 import Hero from "@/components/Hero";
-import HomeSection from "@/components/HomeSection";
 
 export default function Home() {
   return (
-    <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+    <main className="flex flex-col row-start-2 items-center sm:items-start">
       <Hero />
-      <HomeSection />
+      <CategoryBrowseSection />
       <BusinessCTA />
     </main>
   );

@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { businessCategories } from "@/mockdata/businessCategory";
 import { CheckCircle, Heart, Search, Star } from "lucide-react";
 import Image from "next/image";
 
@@ -19,7 +20,7 @@ const Hero = () => {
       <div className="absolute inset-0">
         <Image
           src="/homepageHero.jpg"
-          alt="St. Louis Skyline with Arch"
+          alt="St. Louis Wedding Scene"
           fill
           priority
           className="object-cover"
@@ -31,11 +32,11 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4 md:px-8 max-w-7xl mx-auto">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-          Discover St. Louis<span className="text-yellow-400">'s Finest</span>
+          Your Perfect Wedding in St. Louis
         </h1>
         <p className="text-xl md:text-2xl text-white mb-8 max-w-3xl">
-          Your trusted directory of local businesses, artisans, and service
-          providers in the Gateway City
+          Find trusted wedding professionals to make your special day
+          unforgettable
         </p>
 
         {/* Search Bar using shadcn components */}
@@ -45,7 +46,7 @@ const Hero = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
               <Input
                 type="text"
-                placeholder="What are you looking for?"
+                placeholder="Search for wedding vendors"
                 className="pl-9 bg-white h-12"
               />
             </div>
@@ -57,11 +58,14 @@ const Hero = () => {
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="restaurants">Restaurants</SelectItem>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="services">Services</SelectItem>
-                  <SelectItem value="contractors">Contractors</SelectItem>
-                  <SelectItem value="photographers">Photographers</SelectItem>
+                  {businessCategories.map((category) => (
+                    <SelectItem
+                      key={category}
+                      value={category.toLowerCase().replace(/\s+/g, "-")}
+                    >
+                      {category}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -79,7 +83,7 @@ const Hero = () => {
             className="bg-white py-2 px-4 text-gray-900 font-medium text-sm border border-gray-200 shadow-sm"
           >
             <CheckCircle className="mr-2 h-4 w-4 text-green-600" /> Verified
-            Local Businesses
+            Wedding Professionals
           </Badge>
           <Badge
             variant="secondary"
@@ -91,7 +95,7 @@ const Hero = () => {
             variant="secondary"
             className="bg-white py-2 px-4 text-gray-900 font-medium text-sm border border-gray-200 shadow-sm"
           >
-            <Heart className="mr-2 h-4 w-4 text-red-600" /> Support Local
+            <Heart className="mr-2 h-4 w-4 text-red-600" /> Local Expertise
           </Badge>
         </div>
       </div>

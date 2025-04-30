@@ -1,12 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { setRole } from "../_actions";
 
 export default function RoleSelectionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (role: "user" | "businessOwner") => {
     setIsSubmitting(true);
@@ -14,18 +12,11 @@ export default function RoleSelectionForm() {
     const formData = new FormData();
     formData.append("role", role);
 
-    const result = await setRole(formData);
+    await setRole(formData);
 
-    if (result.success) {
-      // Redirect to appropriate onboarding page based on role
-      router.push(
-        role === "user" ? "/onboarding/user" : "/onboarding/business"
-      );
-    } else {
-      // Handle error
-      console.error("Error setting role:", result.error);
-      setIsSubmitting(false);
-    }
+    setIsSubmitting(false);
+
+    return;
   };
 
   return (

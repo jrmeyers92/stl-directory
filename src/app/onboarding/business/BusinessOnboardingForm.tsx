@@ -1,13 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { completeBusinessOnboarding } from "../_actions";
-
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,62 +19,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { businessCategories } from "@/mockdata/businessCategory";
 import { useAuth } from "@clerk/nextjs";
-
-const formSchema = z.object({
-  clerkId: z.string(),
-  businessName: z.string().min(2, {
-    message: "Business name must be at least 2 characters.",
-  }),
-  businessCategory: z.string().min(1, {
-    message: "Please select a business category.",
-  }),
-  businessSubcategory: z.string().min(1, {
-    message: "Please select a business subcategory.",
-  }),
-  businessAddress: z.string().min(3, {
-    message: "Please enter a valid address.",
-  }),
-  businessCity: z.string().min(2, {
-    message: "Please enter a valid city.",
-  }),
-  businessState: z.string().min(2, {
-    message: "Please enter a valid state.",
-  }),
-  businessZip: z.string().min(5, {
-    message: "Please enter a valid ZIP code.",
-  }),
-  businessPhone: z.string().min(10, {
-    message: "Please enter a valid phone number.",
-  }),
-  businessEmail: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  businessWebsite: z
-    .string()
-    .url({
-      message: "Please enter a valid URL.",
-    })
-    .optional()
-    .or(z.literal("")),
-  businessDescription: z.string().min(20, {
-    message: "Business description must be at least 20 characters.",
-  }),
-});
+import { zodResolver } from "@hookform/resolvers/zod";
+import { PlusCircle, Trash2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { completeBusinessOnboarding } from "../_actions";
+import {
+  BusinessOnboardingValues,
+  businessOnboardingFormSchema,
+} from "../schema";
 
 export default function BusinessOnboardingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
   const { userId } = useAuth();
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<BusinessOnboardingValues>({
+    resolver: zodResolver(businessOnboardingFormSchema),
     defaultValues: {
       clerkId: userId || "",
       businessName: "",
       businessCategory: "",
-      businessSubcategory: "",
       businessAddress: "",
       businessCity: "St. Louis",
       businessState: "MO",
@@ -91,39 +51,61 @@ export default function BusinessOnboardingForm() {
       businessEmail: "",
       businessWebsite: "",
       businessDescription: "",
+      socialMedia: [{ platform: "facebook", url: "https://facebook.com" }],
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  // Function to add a new social media field
+  const addSocialMedia = () => {
+    const currentSocialMedia = form.getValues("socialMedia") || [];
+    form.setValue("socialMedia", [
+      ...currentSocialMedia,
+      { platform: "instagram", url: "" },
+    ]);
+  };
+
+  // Function to remove a social media field
+  const removeSocialMedia = (index: number) => {
+    const currentSocialMedia = form.getValues("socialMedia") || [];
+    if (currentSocialMedia.length <= 1) return; // Prevent removing the last item
+    form.setValue(
+      "socialMedia",
+      currentSocialMedia.filter((_, i) => i !== index)
+    );
+  };
+
+  async function onSubmit(values: BusinessOnboardingValues) {
     try {
       setIsSubmitting(true);
-      console.log(values);
 
-      // Call the server action to complete onboarding
-      const result = await completeBusinessOnboarding(values);
+      // Ensure socialMedia is properly formatted
+      const formattedValues = {
+        ...values,
+        socialMedia: values.socialMedia || [],
+      };
 
-      if (result?.success) {
-        // Show success toast
-        toast.success("Business profile created!", {
-          description: "Your business has been successfully registered.",
-        });
+      // Use startTransition to prevent UI from freezing during submission
+      startTransition(async () => {
+        // Call the server action to complete onboarding
+        const result = await completeBusinessOnboarding(formattedValues);
 
-        // Force a hard navigation to refresh the session
-        window.location.href = "/";
+        if (result?.success) {
+          // Show success toast
+          toast.success("Business profile created!", {
+            description: "Your business has been successfully registered.",
+          });
 
-        // Alternatively, if you want to stay within the Next.js router:
-        // router.push("/");
-        // setTimeout(() => {
-        //   window.location.reload();
-        // }, 100);
-      } else {
-        // Show error toast for server errors
-        toast.error("Registration failed", {
-          description:
-            result?.error ||
-            "There was a problem creating your business profile.",
-        });
-      }
+          // Force a hard navigation to refresh the session
+          window.location.href = "/";
+        } else {
+          // Show error toast for server errors
+          toast.error("Registration failed", {
+            description:
+              result?.error ||
+              "There was a problem creating your business profile.",
+          });
+        }
+      });
     } catch (error) {
       console.error("Error submitting form:", error);
       // Show error toast for client-side errors
@@ -139,6 +121,9 @@ export default function BusinessOnboardingForm() {
       setIsSubmitting(false);
     }
   }
+
+  // Safely access socialMedia array with fallback
+  const socialMediaFields = form.watch("socialMedia") || [];
 
   return (
     <div className="max-w-3xl mx-auto p-6">
@@ -165,7 +150,7 @@ export default function BusinessOnboardingForm() {
             )}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             <FormField
               control={form.control}
               name="businessCategory"
@@ -173,213 +158,28 @@ export default function BusinessOnboardingForm() {
                 <FormItem>
                   <FormLabel>Business Category</FormLabel>
                   <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      // Reset subcategory when category changes
-                      form.setValue("businessSubcategory", "");
-                    }}
+                    onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
+                        <SelectValue placeholder="Select your business category" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Creative & Media">
-                        Creative & Media
-                      </SelectItem>
-                      <SelectItem value="Food & Drink">Food & Drink</SelectItem>
-                      <SelectItem value="Retail & Shopping">
-                        Retail & Shopping
-                      </SelectItem>
-                      <SelectItem value="Home Services">
-                        Home Services
-                      </SelectItem>
-                      <SelectItem value="Health & Wellness">
-                        Health & Wellness
-                      </SelectItem>
-                      <SelectItem value="Beauty & Personal Care">
-                        Beauty & Personal Care
-                      </SelectItem>
-                      <SelectItem value="Events & Entertainment">
-                        Events & Entertainment
-                      </SelectItem>
-                      <SelectItem value="Kids & Family">
-                        Kids & Family
-                      </SelectItem>
-                      <SelectItem value="Travel & Recreation">
-                        Travel & Recreation
-                      </SelectItem>
-                      <SelectItem value="Professional Services">
-                        Professional Services
-                      </SelectItem>
-                      <SelectItem value="Auto Services">
-                        Auto Services
-                      </SelectItem>
+                      {businessCategories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Choose the main category for your business.
+                    Choose the category that best describes your business.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
-            />
-
-            <FormField
-              control={form.control}
-              name="businessSubcategory"
-              render={({ field }) => {
-                const selectedCategory = form.watch("businessCategory");
-
-                // Get subcategories based on selected category
-                const getSubcategories = () => {
-                  switch (selectedCategory) {
-                    case "Creative & Media":
-                      return [
-                        "Photographers",
-                        "Videographers",
-                        "Graphic Designers",
-                        "Web Designers",
-                        "Marketing Agencies",
-                        "Printing Services",
-                      ];
-                    case "Food & Drink":
-                      return [
-                        "Restaurants",
-                        "Cafés & Coffee Shops",
-                        "Food Trucks",
-                        "Bakeries",
-                        "Breweries",
-                        "Wineries",
-                        "Bars & Lounges",
-                        "Caterers",
-                      ];
-                    case "Retail & Shopping":
-                      return [
-                        "Boutiques",
-                        "Gift Shops",
-                        "Antique Stores",
-                        "Bookstores",
-                        "Florists",
-                        "Farmers Markets",
-                        "Art Galleries",
-                      ];
-                    case "Home Services":
-                      return [
-                        "Plumbers",
-                        "Electricians",
-                        "HVAC Services",
-                        "General Contractors",
-                        "Roofing Companies",
-                        "Interior Designers",
-                        "Cleaning Services",
-                        "Landscapers",
-                      ];
-                    case "Health & Wellness":
-                      return [
-                        "Gyms & Fitness Studios",
-                        "Yoga & Pilates",
-                        "Massage Therapists",
-                        "Chiropractors",
-                        "Dentists",
-                        "Family Doctors",
-                        "Mental Health Services",
-                        "Nutritionists",
-                      ];
-                    case "Beauty & Personal Care":
-                      return [
-                        "Hair Salons",
-                        "Barbershops",
-                        "Nail Salons",
-                        "Spas",
-                        "Estheticians",
-                        "Makeup Artists",
-                        "Tattoo & Piercing Studios",
-                      ];
-                    case "Events & Entertainment":
-                      return [
-                        "Event Planners",
-                        "DJs & Live Bands",
-                        "Wedding Venues",
-                        "Party Rentals",
-                        "Catering Services",
-                        "Event Photographers",
-                      ];
-                    case "Kids & Family":
-                      return [
-                        "Childcare & Daycares",
-                        "Pediatricians",
-                        "Kids Activities & Classes",
-                        "Tutoring Services",
-                        "Toy Stores",
-                      ];
-                    case "Travel & Recreation":
-                      return [
-                        "Hotels & B&Bs",
-                        "Local Attractions",
-                        "Parks & Trails",
-                        "Tour Services",
-                        "Bike Rentals",
-                        "Museums & Cultural Centers",
-                      ];
-                    case "Professional Services":
-                      return [
-                        "Real Estate Agents",
-                        "Lawyers",
-                        "Accountants",
-                        "Insurance Agents",
-                        "Financial Advisors",
-                        "Notaries",
-                      ];
-                    case "Auto Services":
-                      return [
-                        "Auto Repair",
-                        "Car Washes",
-                        "Towing Services",
-                        "Auto Detailers",
-                        "Dealerships",
-                      ];
-                    default:
-                      return [];
-                  }
-                };
-
-                return (
-                  <FormItem>
-                    <FormLabel>Business Subcategory</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={!selectedCategory}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={
-                              selectedCategory
-                                ? "Select a subcategory"
-                                : "Select a category first"
-                            }
-                          />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {getSubcategories().map((subcategory) => (
-                          <SelectItem key={subcategory} value={subcategory}>
-                            {subcategory}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Select the specific type of business you operate.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
             />
           </div>
 
@@ -489,6 +289,85 @@ export default function BusinessOnboardingForm() {
               </FormItem>
             )}
           />
+
+          {/* Social Media Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium">Social Media Links</h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addSocialMedia}
+                className="flex items-center gap-1"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Add Link
+              </Button>
+            </div>
+
+            {socialMediaFields.map((_, index) => (
+              <div
+                key={index}
+                className="grid grid-cols-1 md:grid-cols-3 gap-4"
+              >
+                <FormField
+                  control={form.control}
+                  name={`socialMedia.${index}.platform`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select platform" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="facebook">Facebook</SelectItem>
+                            <SelectItem value="instagram">Instagram</SelectItem>
+                            <SelectItem value="twitter">Twitter</SelectItem>
+                            <SelectItem value="linkedin">LinkedIn</SelectItem>
+                            <SelectItem value="youtube">YouTube</SelectItem>
+                            <SelectItem value="tiktok">TikTok</SelectItem>
+                            <SelectItem value="pinterest">Pinterest</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`socialMedia.${index}.url`}
+                  render={({ field }) => (
+                    <FormItem className="col-span-2 flex items-center">
+                      <FormControl>
+                        <Input placeholder="https://" {...field} />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="ml-2"
+                        onClick={() => removeSocialMedia(index)}
+                        disabled={socialMediaFields.length <= 1}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ))}
+          </div>
 
           <FormField
             control={form.control}

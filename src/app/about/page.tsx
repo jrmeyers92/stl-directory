@@ -35,12 +35,12 @@ export default function AboutPage() {
           <p className="text-lg mb-4">
             We believe that local businesses are the backbone of our community.
             They create jobs, preserve neighborhood character, and provide
-            personalized services that chain stores simply can't match.
+            personalized services that chain stores simply can&apos;t match.
           </p>
           <p className="text-lg">
             By connecting residents with local photographers, restaurants,
-            shops, contractors, and more, we're helping to build a stronger,
-            more resilient local economy for everyone.
+            shops, contractors, and more, we&apos;re helping to build a
+            stronger, more resilient local economy for everyone.
           </p>
         </div>
         <div className="rounded-lg overflow-hidden shadow-xl">
@@ -194,7 +194,7 @@ export default function AboutPage() {
         <div className="bg-gray-50 rounded-xl p-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Get In Touch</h2>
           <p className="text-lg mb-6">
-            Have questions or suggestions? We'd love to hear from you!
+            Have questions or suggestions? We&apos;d love to hear from you!
           </p>
           <Button asChild size="lg">
             <Link href="/contact">Contact Us</Link>
