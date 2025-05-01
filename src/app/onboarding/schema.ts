@@ -1,62 +1,59 @@
 import { z } from "zod";
 
-// Social media schema
-const socialMediaItemSchema = z.object({
-  platform: z.string().min(1, {
-    message: "Platform is required",
-  }),
-  url: z.string().url({
-    message: "Please enter a valid URL",
-  }),
+// Schema for social media links
+const socialMediaSchema = z.object({
+  platform: z.string().min(1, "Platform is required"),
+  url: z.string().url("Must be a valid URL"),
 });
 
-// This is the schema for the business onboarding form
+// Main business onboarding schema
 export const businessOnboardingFormSchema = z.object({
   clerkId: z.string(),
-  businessName: z.string().min(2, {
-    message: "Business name must be at least 2 characters.",
-  }),
-  businessCategory: z.string().min(1, {
-    message: "Please select a business category.",
-  }),
-  businessAddress: z.string().min(5, {
-    message: "Please enter a valid street address.",
-  }),
-  businessCity: z.string().min(2, {
-    message: "Please enter a valid city name.",
-  }),
-  businessState: z.string().length(2, {
-    message: "Please enter a valid 2-letter state code.",
-  }),
-  businessZip: z.string().regex(/^\d{5}(-\d{4})?$/, {
-    message: "Please enter a valid ZIP code (12345 or 12345-6789).",
-  }),
-  businessPhone: z
-    .string()
-    .regex(/^(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/, {
-      message: "Please enter a valid phone number.",
-    }),
-  businessEmail: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
+  businessName: z.string().min(2, "Business name is required"),
+  businessCategory: z.string().min(1, "Please select a category"),
+  businessAddress: z.string().min(3, "Address is required"),
+  businessCity: z.string().min(2, "City is required"),
+  businessState: z.string().min(2, "State is required"),
+  businessZip: z.string().min(5, "ZIP code is required"),
+  businessPhone: z.string().min(10, "Valid phone number is required"),
+  businessEmail: z.string().email("Must be a valid email address"),
   businessWebsite: z
     .string()
-    .url({
-      message: "Please enter a valid URL (or leave empty).",
-    })
+    .url("Must be a valid URL")
     .optional()
     .or(z.literal("")),
   businessDescription: z
     .string()
-    .min(20, {
-      message: "Description should be at least 20 characters.",
-    })
-    .max(500, {
-      message: "Description should not exceed 500 characters.",
-    }),
-  socialMedia: z.array(socialMediaItemSchema),
+    .min(20, "Description must be at least 20 characters"),
+  socialMedia: z
+    .array(socialMediaSchema)
+    .min(1, "At least one social media link is required"),
+  logoImage: z
+    .instanceof(File)
+    .optional()
+    .nullable()
+    .refine(
+      (file) => {
+        if (!file) return true;
+        // Check file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) return false;
+        // Check file type
+        const validTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/webp",
+        ];
+        return validTypes.includes(file.type);
+      },
+      {
+        message:
+          "Profile image must be less than 5MB and in JPEG, PNG, GIF, or WEBP format",
+      }
+    ),
 });
 
+// Type for the form values
 export type BusinessOnboardingValues = z.infer<
   typeof businessOnboardingFormSchema
 >;

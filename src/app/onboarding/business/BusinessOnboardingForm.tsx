@@ -22,8 +22,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { businessCategories } from "@/mockdata/businessCategory";
 import { useAuth } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusCircle, Trash2 } from "lucide-react";
-import { useState, useTransition } from "react";
+import { PlusCircle, Trash2, Upload } from "lucide-react";
+import { useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { completeBusinessOnboarding } from "../_actions";
@@ -36,6 +36,8 @@ export default function BusinessOnboardingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userId } = useAuth();
   const [isPending, startTransition] = useTransition();
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<BusinessOnboardingValues>({
     resolver: zodResolver(businessOnboardingFormSchema),
@@ -52,6 +54,7 @@ export default function BusinessOnboardingForm() {
       businessWebsite: "",
       businessDescription: "",
       socialMedia: [{ platform: "facebook", url: "https://facebook.com" }],
+      logoImage: null,
     },
   });
 
@@ -72,6 +75,26 @@ export default function BusinessOnboardingForm() {
       "socialMedia",
       currentSocialMedia.filter((_, i) => i !== index)
     );
+  };
+
+  // Handle image selection with preview
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      form.setValue("logoImage", null);
+      setImagePreview(null);
+      return;
+    }
+
+    // Create a preview URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Update form value
+    form.setValue("logoImage", file);
   };
 
   async function onSubmit(values: BusinessOnboardingValues) {
@@ -182,6 +205,63 @@ export default function BusinessOnboardingForm() {
               )}
             />
           </div>
+
+          {/* Profile Image Field with Preview */}
+          <FormField
+            control={form.control}
+            name="logoImage"
+            render={({ field: { value, onChange, ...fieldProps } }) => (
+              <FormItem>
+                <FormLabel>Logo</FormLabel>
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                  <div
+                    className="relative w-32 h-32 border rounded-md overflow-hidden flex items-center justify-center bg-gray-50 cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {imagePreview ? (
+                      <div className="w-full h-full relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imagePreview}
+                          alt="Logo preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <Upload className="h-8 w-8 text-gray-400" />
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <FormControl>
+                      <Input
+                        {...fieldProps}
+                        type="file"
+                        accept="image/jpeg, image/png, image/gif, image/webp"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        ref={fileInputRef}
+                      />
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full md:w-auto"
+                    >
+                      {imagePreview ? "Change Image" : "Upload Image"}
+                    </Button>
+                    <FormDescription className="mt-2">
+                      Upload a professional logo for your business. Max size:
+                      5MB. Recommended size: 400x400px. JPEG, PNG, GIF, or WEBP
+                      format.
+                    </FormDescription>
+                    <FormMessage />
+                  </div>
+                </div>
+              </FormItem>
+            )}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField

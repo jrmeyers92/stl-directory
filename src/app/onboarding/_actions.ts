@@ -1,14 +1,16 @@
 "use server";
 
 import { Roles } from "@/types/globals";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { createClient } from "@/utils/supabase/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { businessOnboardingFormSchema } from "./schema";
 
 type BusinessOnboardingData = z.infer<typeof businessOnboardingFormSchema>;
 
 export async function setRole(formData: FormData) {
+  console.log(formData);
   try {
     const { userId } = await auth();
 
@@ -65,13 +67,43 @@ export async function completeBusinessOnboarding(
       return { success: false, error: "User not authenticated" };
     }
 
+    const supabase = await createClient();
+    let logoUrl = null;
+
+    // Handle file upload if a logo was provided
+    if (businessData.logoImage) {
+      // Generate a unique filename with original extension
+      const fileExt = businessData.logoImage.name.split(".").pop();
+      const fileName = `${userId}-${uuidv4()}.${fileExt}`;
+      const filePath = `business-profiles/${fileName}`;
+
+      // Upload the file to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from("stl-directory")
+        .upload(filePath, businessData.logoImage, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("File upload error:", uploadError);
+        return { success: false, error: "Failed to upload logo" };
+      }
+
+      // Get the public URL of the uploaded file
+      const { data: urlData } = supabase.storage
+        .from("stl-directory")
+        .getPublicUrl(filePath);
+
+      logoUrl = urlData.publicUrl;
+    }
+
     // Filter out empty social media entries
     const filteredSocialMedia = businessData.socialMedia.filter(
       (item) => item.platform && item.url
     );
 
-    const supabase = await createAdminClient();
-
+    // Insert business data with the profile image URL
     const { error } = await supabase.from("stl_directory_businesses").insert({
       clerk_id: userId,
       business_name: businessData.businessName,
@@ -85,6 +117,7 @@ export async function completeBusinessOnboarding(
       business_state: businessData.businessState,
       business_zip: businessData.businessZip,
       social_media: JSON.stringify(filteredSocialMedia),
+      logo_url: logoUrl, // Store the logo URL
       is_active: true, // Set to false if you want to review businesses before activation
     });
 
