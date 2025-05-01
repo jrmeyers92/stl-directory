@@ -205,62 +205,69 @@ export default function BusinessOnboardingForm() {
               )}
             />
           </div>
-
-          {/* Profile Image Field with Preview */}
+          {/* Update logoImage field renderer to avoid TypeScript and ESLint errors */}
           <FormField
             control={form.control}
             name="logoImage"
-            render={({ field: { value, onChange, ...fieldProps } }) => (
-              <FormItem>
-                <FormLabel>Logo</FormLabel>
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-                  <div
-                    className="relative w-32 h-32 border rounded-md overflow-hidden flex items-center justify-center bg-gray-50 cursor-pointer"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {imagePreview ? (
-                      <div className="w-full h-full relative">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={imagePreview}
-                          alt="Logo preview"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <Upload className="h-8 w-8 text-gray-400" />
-                    )}
-                  </div>
+            render={({ field }) => {
+              // Destructuring only the props we need from field
+              // This avoids passing 'value' to the Input component
+              const { name, onBlur, disabled } = field;
 
-                  <div className="flex-1">
-                    <FormControl>
-                      <Input
-                        {...fieldProps}
-                        type="file"
-                        accept="image/jpeg, image/png, image/gif, image/webp"
-                        onChange={handleImageChange}
-                        className="hidden"
-                        ref={fileInputRef}
-                      />
-                    </FormControl>
-                    <Button
-                      type="button"
-                      variant="outline"
+              return (
+                <FormItem>
+                  <FormLabel>Logo</FormLabel>
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                    <div
+                      className="relative w-32 h-32 border rounded-md overflow-hidden flex items-center justify-center bg-gray-50 cursor-pointer"
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full md:w-auto"
                     >
-                      {imagePreview ? "Change Image" : "Upload Image"}
-                    </Button>
-                    <FormDescription className="mt-2">
-                      Upload a professional logo for your business. Max size:
-                      5MB. Recommended size: 400x400px. JPEG, PNG, GIF, or WEBP
-                      format.
-                    </FormDescription>
-                    <FormMessage />
+                      {imagePreview ? (
+                        <div className="w-full h-full relative">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={imagePreview}
+                            alt="Logo preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <Upload className="h-8 w-8 text-gray-400" />
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <FormControl>
+                        <Input
+                          type="file"
+                          accept="image/jpeg, image/png, image/gif, image/webp"
+                          onChange={handleImageChange}
+                          className="hidden"
+                          ref={fileInputRef}
+                          name={name}
+                          onBlur={onBlur}
+                          disabled={disabled}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full md:w-auto"
+                      >
+                        {imagePreview ? "Change Image" : "Upload Image"}
+                      </Button>
+                      <FormDescription className="mt-2">
+                        Upload a professional logo for your business. Max size:
+                        5MB. Recommended size: 400x400px. JPEG, PNG, GIF, or
+                        WEBP format.
+                      </FormDescription>
+                      <FormMessage />
+                    </div>
                   </div>
-                </div>
-              </FormItem>
-            )}
+                </FormItem>
+              );
+            }}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
