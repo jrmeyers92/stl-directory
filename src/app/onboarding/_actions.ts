@@ -42,6 +42,39 @@ export async function setRole(formData: FormData) {
   }
 }
 
+// Helper function to upload a single file
+async function uploadFile(
+  supabase: any,
+  file: File,
+  userId: string,
+  folder: string
+) {
+  // Generate a unique filename with original extension
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${userId}-${uuidv4()}.${fileExt}`;
+  const filePath = `${folder}/${fileName}`;
+
+  // Upload the file to Supabase storage
+  const { error: uploadError } = await supabase.storage
+    .from("stl-directory")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (uploadError) {
+    console.error("File upload error:", uploadError);
+    return { success: false, error: "Failed to upload file", path: null };
+  }
+
+  // Get the public URL of the uploaded file
+  const { data: urlData } = supabase.storage
+    .from("stl-directory")
+    .getPublicUrl(filePath);
+
+  return { success: true, error: null, path: urlData.publicUrl };
+}
+
 export async function completeBusinessOnboarding(
   businessData: BusinessOnboardingData
 ) {
@@ -69,33 +102,51 @@ export async function completeBusinessOnboarding(
 
     const supabase = await createClient();
     let logoUrl = null;
+    let bannerImageUrl = null;
+    let galleryImageUrls = [];
 
-    // Handle file upload if a logo was provided
+    // Handle logo upload if provided
     if (businessData.logoImage) {
-      // Generate a unique filename with original extension
-      const fileExt = businessData.logoImage.name.split(".").pop();
-      const fileName = `${userId}-${uuidv4()}.${fileExt}`;
-      const filePath = `business-profiles/${fileName}`;
-
-      // Upload the file to Supabase storage
-      const { error: uploadError } = await supabase.storage
-        .from("stl-directory")
-        .upload(filePath, businessData.logoImage, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) {
-        console.error("File upload error:", uploadError);
-        return { success: false, error: "Failed to upload logo" };
+      const logoUpload = await uploadFile(
+        supabase,
+        businessData.logoImage,
+        userId,
+        "business-profiles"
+      );
+      if (!logoUpload.success) {
+        return { success: false, error: logoUpload.error };
       }
+      logoUrl = logoUpload.path;
+    }
 
-      // Get the public URL of the uploaded file
-      const { data: urlData } = supabase.storage
-        .from("stl-directory")
-        .getPublicUrl(filePath);
+    // Handle banner image upload if provided
+    if (businessData.bannerImage) {
+      const bannerUpload = await uploadFile(
+        supabase,
+        businessData.bannerImage,
+        userId,
+        "business-banners"
+      );
+      if (!bannerUpload.success) {
+        return { success: false, error: bannerUpload.error };
+      }
+      bannerImageUrl = bannerUpload.path;
+    }
 
-      logoUrl = urlData.publicUrl;
+    // Handle gallery images upload if provided
+    if (businessData.galleryImages && businessData.galleryImages.length > 0) {
+      for (const image of businessData.galleryImages) {
+        const galleryUpload = await uploadFile(
+          supabase,
+          image,
+          userId,
+          "business-galleries"
+        );
+        if (!galleryUpload.success) {
+          return { success: false, error: galleryUpload.error };
+        }
+        galleryImageUrls.push(galleryUpload.path);
+      }
     }
 
     // Filter out empty social media entries
@@ -103,7 +154,7 @@ export async function completeBusinessOnboarding(
       (item) => item.platform && item.url
     );
 
-    // Insert business data with the profile image URL
+    // Insert business data with all image URLs
     const { error } = await supabase.from("stl_directory_businesses").insert({
       clerk_id: userId,
       business_name: businessData.businessName,
@@ -117,7 +168,10 @@ export async function completeBusinessOnboarding(
       business_state: businessData.businessState,
       business_zip: businessData.businessZip,
       social_media: JSON.stringify(filteredSocialMedia),
-      logo_url: logoUrl, // Store the logo URL
+      logo_url: logoUrl,
+      banner_image_url: bannerImageUrl,
+      gallery_images:
+        galleryImageUrls.length > 0 ? JSON.stringify(galleryImageUrls) : null,
       is_active: true, // Set to false if you want to review businesses before activation
     });
 

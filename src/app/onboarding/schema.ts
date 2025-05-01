@@ -6,6 +6,19 @@ const socialMediaSchema = z.object({
   url: z.string().url("Must be a valid URL"),
 });
 
+// File validation function to reuse for different image fields
+const validateImageFile = (
+  file: File | null | undefined,
+  fieldName: string
+) => {
+  if (!file) return true;
+  // Check file size (5MB limit)
+  if (file.size > 5 * 1024 * 1024) return false;
+  // Check file type
+  const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  return validTypes.includes(file.type);
+};
+
 // Main business onboarding schema
 export const businessOnboardingFormSchema = z.object({
   clerkId: z.string(),
@@ -32,23 +45,31 @@ export const businessOnboardingFormSchema = z.object({
     .instanceof(File)
     .optional()
     .nullable()
+    .refine((file) => validateImageFile(file, "Logo"), {
+      message:
+        "Logo image must be less than 5MB and in JPEG, PNG, GIF, or WEBP format",
+    }),
+  bannerImage: z
+    .instanceof(File)
+    .optional()
+    .nullable()
+    .refine((file) => validateImageFile(file, "Banner"), {
+      message:
+        "Banner image must be less than 5MB and in JPEG, PNG, GIF, or WEBP format",
+    }),
+  galleryImages: z
+    .array(z.instanceof(File))
+    .optional()
+    .nullable()
     .refine(
-      (file) => {
-        if (!file) return true;
-        // Check file size (5MB limit)
-        if (file.size > 5 * 1024 * 1024) return false;
-        // Check file type
-        const validTypes = [
-          "image/jpeg",
-          "image/png",
-          "image/gif",
-          "image/webp",
-        ];
-        return validTypes.includes(file.type);
+      (files) => {
+        if (!files || files.length === 0) return true;
+        if (files.length > 10) return false; // Maximum 10 gallery images
+        return files.every((file) => validateImageFile(file, "Gallery"));
       },
       {
         message:
-          "Profile image must be less than 5MB and in JPEG, PNG, GIF, or WEBP format",
+          "Gallery images must be less than 5MB each, in JPEG, PNG, GIF, or WEBP format, and maximum 10 images",
       }
     ),
 });

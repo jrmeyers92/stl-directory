@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { businessCategories } from "@/mockdata/businessCategory";
 import { useAuth } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusCircle, Trash2, Upload } from "lucide-react";
+import { PlusCircle, Trash2, Upload, X } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -36,8 +36,16 @@ export default function BusinessOnboardingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userId } = useAuth();
   const [isPending, startTransition] = useTransition();
+
+  // Image preview states
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+
+  // File input refs
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<BusinessOnboardingValues>({
     resolver: zodResolver(businessOnboardingFormSchema),
@@ -55,6 +63,8 @@ export default function BusinessOnboardingForm() {
       businessDescription: "",
       socialMedia: [{ platform: "facebook", url: "https://facebook.com" }],
       logoImage: null,
+      bannerImage: null,
+      galleryImages: [],
     },
   });
 
@@ -77,7 +87,7 @@ export default function BusinessOnboardingForm() {
     );
   };
 
-  // Handle image selection with preview
+  // Handle logo image selection with preview
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -95,6 +105,78 @@ export default function BusinessOnboardingForm() {
 
     // Update form value
     form.setValue("logoImage", file);
+  };
+
+  // Handle banner image selection with preview
+  const handleBannerImageChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      form.setValue("bannerImage", null);
+      setBannerPreview(null);
+      return;
+    }
+
+    // Create a preview URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setBannerPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Update form value
+    form.setValue("bannerImage", file);
+  };
+
+  // Handle gallery images selection with previews
+  const handleGalleryImagesChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) {
+      form.setValue("galleryImages", []);
+      setGalleryPreviews([]);
+      return;
+    }
+
+    // Limit to 10 images
+    const selectedFiles = Array.from(files).slice(0, 10);
+
+    // Create preview URLs
+    const newPreviews: string[] = [];
+    const promises = selectedFiles.map((file) => {
+      return new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          resolve(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(promises).then((results) => {
+      setGalleryPreviews(results);
+    });
+
+    // Update form value
+    form.setValue("galleryImages", selectedFiles);
+  };
+
+  // Remove a specific gallery image
+  const removeGalleryImage = (index: number) => {
+    const currentGalleryImages = form.getValues("galleryImages") || [];
+    const currentPreviews = [...galleryPreviews];
+
+    if (!currentGalleryImages || currentGalleryImages.length === 0) return;
+
+    const updatedImages = Array.from(currentGalleryImages).filter(
+      (_, i) => i !== index
+    );
+    form.setValue("galleryImages", updatedImages);
+
+    currentPreviews.splice(index, 1);
+    setGalleryPreviews(currentPreviews);
   };
 
   async function onSubmit(values: BusinessOnboardingValues) {
@@ -205,7 +287,8 @@ export default function BusinessOnboardingForm() {
               )}
             />
           </div>
-          {/* Update logoImage field renderer to avoid TypeScript and ESLint errors */}
+
+          {/* Logo Image Field */}
           <FormField
             control={form.control}
             name="logoImage"
@@ -255,7 +338,7 @@ export default function BusinessOnboardingForm() {
                         onClick={() => fileInputRef.current?.click()}
                         className="w-full md:w-auto"
                       >
-                        {imagePreview ? "Change Image" : "Upload Image"}
+                        {imagePreview ? "Change Logo" : "Upload Logo"}
                       </Button>
                       <FormDescription className="mt-2">
                         Upload a professional logo for your business. Max size:
@@ -264,6 +347,152 @@ export default function BusinessOnboardingForm() {
                       </FormDescription>
                       <FormMessage />
                     </div>
+                  </div>
+                </FormItem>
+              );
+            }}
+          />
+
+          {/* Banner Image Field */}
+          <FormField
+            control={form.control}
+            name="bannerImage"
+            render={({ field }) => {
+              const { name, onBlur, disabled } = field;
+
+              return (
+                <FormItem>
+                  <FormLabel>Banner Image</FormLabel>
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                    <div
+                      className="relative w-full h-40 border rounded-md overflow-hidden flex items-center justify-center bg-gray-50 cursor-pointer"
+                      onClick={() => bannerInputRef.current?.click()}
+                    >
+                      {bannerPreview ? (
+                        <div className="w-full h-full relative">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={bannerPreview}
+                            alt="Banner preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <Upload className="h-8 w-8 text-gray-400" />
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <FormControl>
+                        <Input
+                          type="file"
+                          accept="image/jpeg, image/png, image/gif, image/webp"
+                          onChange={handleBannerImageChange}
+                          className="hidden"
+                          ref={bannerInputRef}
+                          name={name}
+                          onBlur={onBlur}
+                          disabled={disabled}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => bannerInputRef.current?.click()}
+                        className="w-full md:w-auto"
+                      >
+                        {bannerPreview ? "Change Banner" : "Upload Banner"}
+                      </Button>
+                      <FormDescription className="mt-2">
+                        Upload a banner image for your business listing. Max
+                        size: 5MB. Recommended size: 1200x300px. JPEG, PNG, GIF,
+                        or WEBP format.
+                      </FormDescription>
+                      <FormMessage />
+                    </div>
+                  </div>
+                </FormItem>
+              );
+            }}
+          />
+
+          {/* Gallery Images Field */}
+          <FormField
+            control={form.control}
+            name="galleryImages"
+            render={({ field }) => {
+              const { name, onBlur, disabled } = field;
+
+              return (
+                <FormItem>
+                  <FormLabel>Gallery Images</FormLabel>
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-4">
+                      {galleryPreviews.map((preview, index) => (
+                        <div
+                          key={index}
+                          className="relative w-24 h-24 border rounded-md overflow-hidden"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={preview}
+                            alt={`Gallery image ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-0 right-0 bg-black bg-opacity-50 text-white rounded-full p-1 m-1"
+                            onClick={() => removeGalleryImage(index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+
+                      {galleryPreviews.length < 10 && (
+                        <div
+                          className="w-24 h-24 border rounded-md flex items-center justify-center bg-gray-50 cursor-pointer"
+                          onClick={() => galleryInputRef.current?.click()}
+                        >
+                          <PlusCircle className="h-8 w-8 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/jpeg, image/png, image/gif, image/webp"
+                        onChange={handleGalleryImagesChange}
+                        className="hidden"
+                        ref={galleryInputRef}
+                        name={name}
+                        onBlur={onBlur}
+                        disabled={disabled}
+                        multiple
+                      />
+                    </FormControl>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => galleryInputRef.current?.click()}
+                      className="w-full md:w-auto"
+                      disabled={galleryPreviews.length >= 10}
+                    >
+                      {galleryPreviews.length > 0
+                        ? "Add More Images"
+                        : "Upload Gallery Images"}
+                    </Button>
+
+                    <FormDescription>
+                      Upload up to 10 images for your business gallery. Each
+                      image must be less than 5MB. JPEG, PNG, GIF, or WEBP
+                      format.
+                    </FormDescription>
+                    <FormMessage />
                   </div>
                 </FormItem>
               );
