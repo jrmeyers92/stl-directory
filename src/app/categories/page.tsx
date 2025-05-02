@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/create-client/server";
 import { ArrowRight, Tags } from "lucide-react";
 import Link from "next/link";
 
