@@ -241,7 +241,11 @@ export async function setRole(formData: FormData) {
       },
     });
 
-    return { success: true };
+    // Return user role in the response so client doesn't need to fetch it separately
+    return {
+      success: true,
+      role: role,
+    };
   } catch (error) {
     console.error("Error setting role:", error);
     return { success: false, error: "Failed to set role" };

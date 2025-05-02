@@ -1,14 +1,16 @@
 "use client";
 
+import { getUserRole } from "@/utils/roles";
 import { useSession } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { setRole } from "../_actions";
 
 export default function RoleSelectionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { session } = useSession();
-  const router = useRouter;
+  const router = useRouter();
 
   const handleSubmit = async (role: "user" | "businessOwner") => {
     setIsSubmitting(true);
@@ -16,7 +18,20 @@ export default function RoleSelectionForm() {
     const formData = new FormData();
     formData.append("role", role);
 
-    await setRole(formData);
+    const userRole = await setRole(formData);
+    await session?.reload();
+
+    if (userRole.success) {
+      if (userRole.role == "businessOwner") {
+        router.push("onboarding/business");
+      } else if (userRole.role == "user") {
+        router.push("/");
+      }
+    } else {
+      toast.error("Role Selection failed", {
+        description: userRole.error,
+      });
+    }
 
     setIsSubmitting(false);
 
