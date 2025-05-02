@@ -1,10 +1,14 @@
 "use client";
 
+import { useSession } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { setRole } from "../_actions";
 
 export default function RoleSelectionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { session } = useSession();
+  const router = useRouter;
 
   const handleSubmit = async (role: "user" | "businessOwner") => {
     setIsSubmitting(true);

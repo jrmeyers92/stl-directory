@@ -1,54 +1,31 @@
 "use server";
 
+import {
+  businessOnboardingDBSchema,
+  businessOnboardingFormSchema,
+  BusinessOnboardingValues,
+} from "@/schemas/businessSchema";
 import { Roles } from "@/types/globals";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/create-client/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { SupabaseClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { businessOnboardingFormSchema } from "./schema";
 
-type BusinessOnboardingData = z.infer<typeof businessOnboardingFormSchema>;
-
-export async function setRole(formData: FormData) {
-  console.log(formData);
-  try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return { success: false, error: "User not authenticated" };
-    }
-
-    const role = formData.get("role") as Roles;
-
-    if (!role || (role !== "user" && role !== "businessOwner")) {
-      return { success: false, error: "Invalid role" };
-    }
-
-    const client = await clerkClient();
-
-    const updateOnboarding = role === "user" ? true : false;
-
-    await client.users.updateUserMetadata(userId, {
-      publicMetadata: {
-        role,
-        onboardingComplete: updateOnboarding,
-      },
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error setting role:", error);
-    return { success: false, error: "Failed to set role" };
-  }
-}
+// Define return type for the upload function
+type UploadResult = {
+  success: boolean;
+  error: string | null;
+  path: string | null;
+};
 
 // Helper function to upload a single file
 async function uploadFile(
-  supabase: any,
+  supabase: SupabaseClient,
   file: File,
   userId: string,
   folder: string
-) {
+): Promise<UploadResult> {
   // Generate a unique filename with original extension
   const fileExt = file.name.split(".").pop();
   const fileName = `${userId}-${uuidv4()}.${fileExt}`;
@@ -76,10 +53,10 @@ async function uploadFile(
 }
 
 export async function completeBusinessOnboarding(
-  businessData: BusinessOnboardingData
+  businessData: BusinessOnboardingValues
 ) {
   try {
-    // Validate with schema
+    // Validate form data with the form schema
     try {
       businessOnboardingFormSchema.parse(businessData);
     } catch (validationError) {
@@ -101,9 +78,9 @@ export async function completeBusinessOnboarding(
     }
 
     const supabase = await createClient();
-    let logoUrl = null;
-    let bannerImageUrl = null;
-    let galleryImageUrls = [];
+    let logoUrl: string | null = null;
+    let bannerImageUrl: string | null = null;
+    const galleryImageUrls: string[] = [];
 
     // Handle logo upload if provided
     if (businessData.logoImage) {
@@ -114,9 +91,11 @@ export async function completeBusinessOnboarding(
         "business-profiles"
       );
       if (!logoUpload.success) {
-        return { success: false, error: logoUpload.error };
+        return { success: false, error: logoUpload.error || "Upload failed" };
       }
-      logoUrl = logoUpload.path;
+      if (logoUpload.path) {
+        logoUrl = logoUpload.path;
+      }
     }
 
     // Handle banner image upload if provided
@@ -128,9 +107,11 @@ export async function completeBusinessOnboarding(
         "business-banners"
       );
       if (!bannerUpload.success) {
-        return { success: false, error: bannerUpload.error };
+        return { success: false, error: bannerUpload.error || "Upload failed" };
       }
-      bannerImageUrl = bannerUpload.path;
+      if (bannerUpload.path) {
+        bannerImageUrl = bannerUpload.path;
+      }
     }
 
     // Handle gallery images upload if provided
@@ -143,9 +124,14 @@ export async function completeBusinessOnboarding(
           "business-galleries"
         );
         if (!galleryUpload.success) {
-          return { success: false, error: galleryUpload.error };
+          return {
+            success: false,
+            error: galleryUpload.error || "Upload failed",
+          };
         }
-        galleryImageUrls.push(galleryUpload.path);
+        if (galleryUpload.path) {
+          galleryImageUrls.push(galleryUpload.path);
+        }
       }
     }
 
@@ -154,7 +140,41 @@ export async function completeBusinessOnboarding(
       (item) => item.platform && item.url
     );
 
-    // Insert business data with all image URLs
+    // Prepare database object with all image URLs
+    const dbData = {
+      clerkId: userId,
+      businessName: businessData.businessName,
+      businessCategory: businessData.businessCategory,
+      businessDescription: businessData.businessDescription,
+      businessEmail: businessData.businessEmail,
+      businessPhone: businessData.businessPhone,
+      businessWebsite: businessData.businessWebsite || null,
+      businessAddress: businessData.businessAddress,
+      businessCity: businessData.businessCity,
+      businessState: businessData.businessState,
+      businessZip: businessData.businessZip,
+      socialMedia: filteredSocialMedia,
+      logoImageUrl: logoUrl,
+      bannerImageUrl: bannerImageUrl,
+      galleryImageUrls: galleryImageUrls.length > 0 ? galleryImageUrls : null,
+    };
+
+    // Validate the DB data before inserting
+    try {
+      businessOnboardingDBSchema.parse(dbData);
+    } catch (dbValidationError) {
+      if (dbValidationError instanceof z.ZodError) {
+        return {
+          success: false,
+          error: `Database validation failed: ${dbValidationError.errors
+            .map((e) => e.message)
+            .join(", ")}`,
+        };
+      }
+      throw dbValidationError;
+    }
+
+    // Insert business data into database
     const { error } = await supabase.from("stl_directory_businesses").insert({
       clerk_id: userId,
       business_name: businessData.businessName,
@@ -193,5 +213,37 @@ export async function completeBusinessOnboarding(
   } catch (error) {
     console.error("Error completing onboarding:", error);
     return { success: false, error: "Failed to complete onboarding" };
+  }
+}
+
+export async function setRole(formData: FormData) {
+  try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return { success: false, error: "User not authenticated" };
+    }
+
+    const role = formData.get("role") as Roles;
+
+    if (!role || (role !== "user" && role !== "businessOwner")) {
+      return { success: false, error: "Invalid role" };
+    }
+
+    const client = await clerkClient();
+
+    const updateOnboarding = role === "user" ? true : false;
+
+    await client.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        role,
+        onboardingComplete: updateOnboarding,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error setting role:", error);
+    return { success: false, error: "Failed to set role" };
   }
 }

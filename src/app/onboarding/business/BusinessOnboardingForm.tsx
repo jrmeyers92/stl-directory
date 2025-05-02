@@ -20,19 +20,23 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { businessCategories } from "@/mockdata/businessCategory";
-import { useAuth } from "@clerk/nextjs";
+import {
+  BusinessOnboardingValues,
+  businessOnboardingFormSchema,
+} from "@/schemas/businessSchema";
+import { useAuth, useSession } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Trash2, Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { completeBusinessOnboarding } from "../_actions";
-import {
-  BusinessOnboardingValues,
-  businessOnboardingFormSchema,
-} from "../schema";
 
 export default function BusinessOnboardingForm() {
+  const { session } = useSession();
+  const router = useRouter();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userId } = useAuth();
   const [isPending, startTransition] = useTransition();
@@ -144,7 +148,7 @@ export default function BusinessOnboardingForm() {
     const selectedFiles = Array.from(files).slice(0, 10);
 
     // Create preview URLs
-    const newPreviews: string[] = [];
+    // const newPreviews: string[] = [];
     const promises = selectedFiles.map((file) => {
       return new Promise<string>((resolve) => {
         const reader = new FileReader();
@@ -201,7 +205,8 @@ export default function BusinessOnboardingForm() {
           });
 
           // Force a hard navigation to refresh the session
-          window.location.href = "/";
+          await session?.reload();
+          router.push("/");
         } else {
           // Show error toast for server errors
           toast.error("Registration failed", {

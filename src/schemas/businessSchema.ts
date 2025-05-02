@@ -17,7 +17,7 @@ export const validateImageFile = (file: File | null | undefined) => {
 };
 
 // Form input schema (includes File objects for client-side handling)
-export const businessOnboardingFormInputSchema = z.object({
+export const businessOnboardingFormSchema = z.object({
   clerkId: z.string(),
   businessName: z.string().min(2, "Business name is required"),
   businessCategory: z.string().min(1, "Please select a category"),
@@ -76,9 +76,14 @@ export const businessOnboardingDBSchema = z.object({
     .nullable(),
 });
 
-// Type for the form input values
+// Type for the form input values (keeping original name for backward compatibility)
+export type BusinessOnboardingValues = z.infer<
+  typeof businessOnboardingFormSchema
+>;
+
+// Additional types for clarity
 export type BusinessOnboardingInputValues = z.infer<
-  typeof businessOnboardingFormInputSchema
+  typeof businessOnboardingFormSchema
 >;
 
 // Type for the database values
