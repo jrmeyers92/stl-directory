@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/create-client/server";
 import { ArrowLeft, Globe, MapPin, Phone } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -26,6 +27,8 @@ export default async function Page({
     .from("stl_directory_businesses")
     .select("*")
     .eq("business_category", category);
+
+  console.log(businesses);
 
   if (error) {
     console.error("Error fetching businesses:", error);
@@ -65,6 +68,12 @@ export default async function Page({
             className="overflow-hidden h-full flex flex-col"
           >
             <CardHeader className="pb-2">
+              <Image
+                src={business.banner_image_url}
+                alt={business.business_name}
+                width={200}
+                height={100}
+              />
               <CardTitle>{business.business_name}</CardTitle>
               {business.business_category && (
                 <CardDescription>
@@ -91,6 +100,20 @@ export default async function Page({
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
                     <span>{business.business_phone}</span>
+                  </div>
+                )}
+
+                {business.business_website && (
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Globe className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <Link
+                      href={business.business_website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      {business.business_website}
+                    </Link>
                   </div>
                 )}
               </div>

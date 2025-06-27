@@ -6,20 +6,20 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-50 border-t mt-20">
+    <footer className="border-t mt-20">
       <div className="border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-1">
               <h3 className="font-bold text-lg mb-4">St. Louis Directory</h3>
-              <p className="text-gray-600 mb-4 text-sm">
+              <p className="mb-4 text-sm">
                 Connecting St. Louis locals with the best businesses and
                 services in the Gateway City.
               </p>
               <div className="flex gap-4">
                 <Link
                   href="#"
-                  className="text-gray-500 hover:text-[#1DA1F2] transition-colors"
+                  className=" hover:text-[#1DA1F2] transition-colors"
                 >
                   <span className="sr-only">Twitter</span>
                   <svg
@@ -32,7 +32,7 @@ const Footer = () => {
                 </Link>
                 <Link
                   href="#"
-                  className="text-gray-500 hover:text-[#4267B2] transition-colors"
+                  className=" hover:text-[#4267B2] transition-colors"
                 >
                   <span className="sr-only">Facebook</span>
                   <svg
@@ -49,7 +49,7 @@ const Footer = () => {
                 </Link>
                 <Link
                   href="#"
-                  className="text-gray-500 hover:text-[#E1306C] transition-colors"
+                  className=" hover:text-[#E1306C] transition-colors"
                 >
                   <span className="sr-only">Instagram</span>
                   <svg
@@ -71,42 +71,27 @@ const Footer = () => {
               <h3 className="font-medium mb-4">Quick Links</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link
-                    href="/about"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/about" className="">
                     About Us
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/featured"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/featured" className="">
                     Featured Businesses
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/neighborhoods"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/neighborhoods" className="">
                     Neighborhoods
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/blog"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/blog" className="">
                     Local Blog
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/events"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/events" className="">
                     Events
                   </Link>
                 </li>
@@ -114,46 +99,26 @@ const Footer = () => {
             </div>
 
             <div>
-              <h3 className="font-medium mb-4">Categories</h3>
+              <h3 className="font-medium mb-4">Popular Categories</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link
-                    href="/categories/restaurants"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    Restaurants
+                  <Link href="/categories/Venues" className="">
+                    Venues
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/categories/retail"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    Retail
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/categories/services"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    Services
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/categories/contractors"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    Contractors
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/categories/photographers"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/categories/Photographers" className="">
                     Photographers
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/categories/Caterers" className="">
+                    Caterers
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/categories/Flourists" className="">
+                    Flourists
                   </Link>
                 </li>
               </ul>
@@ -163,42 +128,27 @@ const Footer = () => {
               <h3 className="font-medium mb-4">Support</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link
-                    href="/contact"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/contact" className="">
                     Contact Us
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/faq"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/faq" className="">
                     FAQ
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/privacy"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/privacy" className="">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/terms"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/terms" className="">
                     Terms of Service
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/business/register"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
+                  <Link href="/business/register" className="">
                     List Your Business
                   </Link>
                 </li>
@@ -208,7 +158,7 @@ const Footer = () => {
 
           <Separator className="my-8" />
 
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+          <div className="flex flex-col md:flex-row justify-between items-center text-sm ">
             <p>© {currentYear} St. Louis Directory. All rights reserved.</p>
             <div className="flex gap-2 mt-4 md:mt-0">
               <Link href="/privacy" className="hover:text-gray-900">

@@ -32,24 +32,25 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
+import { ModeToggle } from "./ModeToggle";
 import { buttonVariants } from "./ui/button";
 
 const Nav = () => {
   return (
-    <nav className="border-b sticky top-0 z-50 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 py-3 px-4">
+    <nav className="border-b sticky top-0 z-50 w-full backdrop-blur py-3 px-4">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         {/* Logo and Brand Name */}
         <Link
           href="/"
           className="flex gap-2 items-center text-xl font-bold justify-center"
         >
-          <Gem className="text-yellow-600" size={28} />
+          <Gem className="text-primary" size={28} />
           <span>STL Wedding Hub</span>
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
-          <NavigationMenu>
+          {/* <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Explore</NavigationMenuTrigger>
@@ -124,7 +125,7 @@ const Nav = () => {
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </NavigationMenuList>
-          </NavigationMenu>
+          </NavigationMenu> */}
 
           {/* Auth Buttons */}
           <SignedIn>
@@ -136,6 +137,8 @@ const Nav = () => {
               >
                 <Heart size={20} />
               </Link>
+              <ModeToggle />
+
               <UserButton afterSignOutUrl="/" />
             </div>
           </SignedIn>
@@ -157,6 +160,7 @@ const Nav = () => {
 
         {/* Mobile Navigation */}
         <div className="md:hidden flex items-center gap-2">
+          <ModeToggle />
           <Link
             href="/search"
             className={buttonVariants({ variant: "ghost", size: "icon" })}
