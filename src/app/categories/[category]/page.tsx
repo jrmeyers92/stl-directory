@@ -1,16 +1,7 @@
+import BusinessCard from "@/components/BusinessCard";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/create-client/server";
-import { ArrowLeft, Globe, MapPin, Phone } from "lucide-react";
-import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -28,8 +19,6 @@ export default async function Page({
     .select("*")
     .eq("business_category", category);
 
-  console.log(businesses);
-
   if (error) {
     console.error("Error fetching businesses:", error);
     throw new Error("Failed to fetch businesses");
@@ -45,7 +34,7 @@ export default async function Page({
         <div>
           <Link
             href="/categories"
-            className="flex items-center text-muted-foreground hover:text-primary mb-2"
+            className="flex items-center text-muted-foreground hover:text-primary mb-2 transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to all categories
@@ -63,77 +52,7 @@ export default async function Page({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {businesses.map((business) => (
-          <Card
-            key={business.id}
-            className="overflow-hidden h-full flex flex-col"
-          >
-            <CardHeader className="pb-2">
-              <Image
-                src={business.banner_image_url}
-                alt={business.business_name}
-                width={200}
-                height={100}
-              />
-              <CardTitle>{business.business_name}</CardTitle>
-              {business.business_category && (
-                <CardDescription>
-                  <Badge variant="secondary" className="mt-1">
-                    {business.business_category}
-                  </Badge>
-                </CardDescription>
-              )}
-            </CardHeader>
-            <CardContent className="flex-grow">
-              {business.business_description && (
-                <p className="text-muted-foreground mb-4 line-clamp-3">
-                  {business.business_description}
-                </p>
-              )}
-              <div className="space-y-2 mt-2">
-                {business.business_address && (
-                  <div className="flex items-start text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>{business.business_address}</span>
-                  </div>
-                )}
-                {business.business_phone && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span>{business.business_phone}</span>
-                  </div>
-                )}
-
-                {business.business_website && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Globe className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <Link
-                      href={business.business_website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline"
-                    >
-                      {business.business_website}
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-            {business.business_website && (
-              <CardFooter className="pt-2 border-t">
-                <Button variant="outline" size="sm" className="w-full" asChild>
-                  <Link
-                    href={business.business_website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center"
-                  >
-                    <Globe className="mr-2 h-4 w-4" />
-                    Visit Website
-                  </Link>
-                </Button>
-              </CardFooter>
-            )}
-          </Card>
+          <BusinessCard key={business.id} business={business} />
         ))}
       </div>
     </div>

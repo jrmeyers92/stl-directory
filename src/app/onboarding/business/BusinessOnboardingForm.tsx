@@ -24,6 +24,7 @@ import {
   BusinessOnboardingValues,
   businessOnboardingFormSchema,
 } from "@/schemas/businessSchema";
+import { resizeImage } from "@/utils/resizeImage";
 import { useAuth, useSession } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Trash2, Upload, X } from "lucide-react";
@@ -45,6 +46,11 @@ export default function BusinessOnboardingForm() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+
+  // Loading states for image processing
+  const [logoLoading, setLogoLoading] = useState(false);
+  const [bannerLoading, setBannerLoading] = useState(false);
+  const [galleryLoading, setGalleryLoading] = useState(false);
 
   // File input refs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -91,8 +97,10 @@ export default function BusinessOnboardingForm() {
     );
   };
 
-  // Handle logo image selection with preview
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle logo image selection with preview and resizing
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       form.setValue("logoImage", null);
@@ -100,19 +108,33 @@ export default function BusinessOnboardingForm() {
       return;
     }
 
-    // Create a preview URL
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImagePreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    setLogoLoading(true);
 
-    // Update form value
-    form.setValue("logoImage", file);
+    try {
+      // Resize the image
+      const resizedFile = await resizeImage(file, "logo");
+
+      // Create a preview URL from the resized file
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(resizedFile);
+
+      // Update form value with resized file
+      form.setValue("logoImage", resizedFile);
+
+      toast.success("Logo processed successfully!");
+    } catch (error) {
+      console.error("Error resizing logo:", error);
+      toast.error("Failed to process logo image. Please try again.");
+    } finally {
+      setLogoLoading(false);
+    }
   };
 
-  // Handle banner image selection with preview
-  const handleBannerImageChange = (
+  // Handle banner image selection with preview and resizing
+  const handleBannerImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
@@ -122,19 +144,33 @@ export default function BusinessOnboardingForm() {
       return;
     }
 
-    // Create a preview URL
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setBannerPreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    setBannerLoading(true);
 
-    // Update form value
-    form.setValue("bannerImage", file);
+    try {
+      // Resize the image
+      const resizedFile = await resizeImage(file, "banner");
+
+      // Create a preview URL from the resized file
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setBannerPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(resizedFile);
+
+      // Update form value with resized file
+      form.setValue("bannerImage", resizedFile);
+
+      toast.success("Banner processed successfully!");
+    } catch (error) {
+      console.error("Error resizing banner:", error);
+      toast.error("Failed to process banner image. Please try again.");
+    } finally {
+      setBannerLoading(false);
+    }
   };
 
-  // Handle gallery images selection with previews
-  const handleGalleryImagesChange = (
+  // Handle gallery images selection with previews and resizing
+  const handleGalleryImagesChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const files = event.target.files;
@@ -144,27 +180,43 @@ export default function BusinessOnboardingForm() {
       return;
     }
 
-    // Limit to 10 images
-    const selectedFiles = Array.from(files).slice(0, 10);
+    setGalleryLoading(true);
 
-    // Create preview URLs
-    // const newPreviews: string[] = [];
-    const promises = selectedFiles.map((file) => {
-      return new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          resolve(e.target?.result as string);
-        };
-        reader.readAsDataURL(file);
+    try {
+      // Limit to 10 images
+      const selectedFiles = Array.from(files).slice(0, 10);
+
+      // Resize all images
+      const resizedFiles = await Promise.all(
+        selectedFiles.map((file) => resizeImage(file, "gallery"))
+      );
+
+      // Create preview URLs from resized files
+      const promises = resizedFiles.map((file) => {
+        return new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            resolve(e.target?.result as string);
+          };
+          reader.readAsDataURL(file);
+        });
       });
-    });
 
-    Promise.all(promises).then((results) => {
+      const results = await Promise.all(promises);
       setGalleryPreviews(results);
-    });
 
-    // Update form value
-    form.setValue("galleryImages", selectedFiles);
+      // Update form value with resized files
+      form.setValue("galleryImages", resizedFiles);
+
+      toast.success(
+        `${resizedFiles.length} gallery images processed successfully!`
+      );
+    } catch (error) {
+      console.error("Error resizing gallery images:", error);
+      toast.error("Failed to process some gallery images. Please try again.");
+    } finally {
+      setGalleryLoading(false);
+    }
   };
 
   // Remove a specific gallery image
@@ -298,8 +350,6 @@ export default function BusinessOnboardingForm() {
             control={form.control}
             name="logoImage"
             render={({ field }) => {
-              // Destructuring only the props we need from field
-              // This avoids passing 'value' to the Input component
               const { name, onBlur, disabled } = field;
 
               return (
@@ -308,11 +358,19 @@ export default function BusinessOnboardingForm() {
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                     <div
                       className="relative w-32 h-32 border rounded-md overflow-hidden flex items-center justify-center bg-gray-50 cursor-pointer"
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() =>
+                        !logoLoading && fileInputRef.current?.click()
+                      }
                     >
-                      {imagePreview ? (
+                      {logoLoading ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                          <span className="text-xs text-gray-500">
+                            Processing...
+                          </span>
+                        </div>
+                      ) : imagePreview ? (
                         <div className="w-full h-full relative">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={imagePreview}
                             alt="Logo preview"
@@ -334,7 +392,7 @@ export default function BusinessOnboardingForm() {
                           ref={fileInputRef}
                           name={name}
                           onBlur={onBlur}
-                          disabled={disabled}
+                          disabled={disabled || logoLoading}
                         />
                       </FormControl>
                       <Button
@@ -342,13 +400,18 @@ export default function BusinessOnboardingForm() {
                         variant="outline"
                         onClick={() => fileInputRef.current?.click()}
                         className="w-full md:w-auto"
+                        disabled={logoLoading}
                       >
-                        {imagePreview ? "Change Logo" : "Upload Logo"}
+                        {logoLoading
+                          ? "Processing..."
+                          : imagePreview
+                          ? "Change Logo"
+                          : "Upload Logo"}
                       </Button>
                       <FormDescription className="mt-2">
-                        Upload a professional logo for your business. Max size:
-                        5MB. Recommended size: 400x400px. JPEG, PNG, GIF, or
-                        WEBP format.
+                        Upload a professional logo for your business. Will be
+                        automatically resized to 300x300px max and converted to
+                        WebP format for optimal performance.
                       </FormDescription>
                       <FormMessage />
                     </div>
@@ -371,11 +434,19 @@ export default function BusinessOnboardingForm() {
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                     <div
                       className="relative w-full h-40 border rounded-md overflow-hidden flex items-center justify-center bg-gray-50 cursor-pointer"
-                      onClick={() => bannerInputRef.current?.click()}
+                      onClick={() =>
+                        !bannerLoading && bannerInputRef.current?.click()
+                      }
                     >
-                      {bannerPreview ? (
+                      {bannerLoading ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                          <span className="text-xs text-gray-500">
+                            Processing...
+                          </span>
+                        </div>
+                      ) : bannerPreview ? (
                         <div className="w-full h-full relative">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={bannerPreview}
                             alt="Banner preview"
@@ -397,7 +468,7 @@ export default function BusinessOnboardingForm() {
                           ref={bannerInputRef}
                           name={name}
                           onBlur={onBlur}
-                          disabled={disabled}
+                          disabled={disabled || bannerLoading}
                         />
                       </FormControl>
                       <Button
@@ -405,12 +476,17 @@ export default function BusinessOnboardingForm() {
                         variant="outline"
                         onClick={() => bannerInputRef.current?.click()}
                         className="w-full md:w-auto"
+                        disabled={bannerLoading}
                       >
-                        {bannerPreview ? "Change Banner" : "Upload Banner"}
+                        {bannerLoading
+                          ? "Processing..."
+                          : bannerPreview
+                          ? "Change Banner"
+                          : "Upload Banner"}
                       </Button>
                       <FormDescription className="mt-2">
-                        Upload a banner image for your business listing. Max
-                        size: 5MB. Recommended size: 1200x300px. JPEG, PNG, GIF,
+                        Upload a banner image for your business listing. Will be
+                        automatically resized to 1200x400px max. JPEG, PNG, GIF,
                         or WEBP format.
                       </FormDescription>
                       <FormMessage />
@@ -432,13 +508,19 @@ export default function BusinessOnboardingForm() {
                 <FormItem>
                   <FormLabel>Gallery Images</FormLabel>
                   <div className="space-y-4">
+                    {galleryLoading && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        Processing gallery images...
+                      </div>
+                    )}
+
                     <div className="flex flex-wrap gap-4">
                       {galleryPreviews.map((preview, index) => (
                         <div
                           key={index}
                           className="relative w-24 h-24 border rounded-md overflow-hidden"
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={preview}
                             alt={`Gallery image ${index + 1}`}
@@ -456,7 +538,7 @@ export default function BusinessOnboardingForm() {
                         </div>
                       ))}
 
-                      {galleryPreviews.length < 10 && (
+                      {galleryPreviews.length < 10 && !galleryLoading && (
                         <div
                           className="w-24 h-24 border rounded-md flex items-center justify-center bg-gray-50 cursor-pointer"
                           onClick={() => galleryInputRef.current?.click()}
@@ -475,7 +557,7 @@ export default function BusinessOnboardingForm() {
                         ref={galleryInputRef}
                         name={name}
                         onBlur={onBlur}
-                        disabled={disabled}
+                        disabled={disabled || galleryLoading}
                         multiple
                       />
                     </FormControl>
@@ -485,17 +567,19 @@ export default function BusinessOnboardingForm() {
                       variant="outline"
                       onClick={() => galleryInputRef.current?.click()}
                       className="w-full md:w-auto"
-                      disabled={galleryPreviews.length >= 10}
+                      disabled={galleryPreviews.length >= 10 || galleryLoading}
                     >
-                      {galleryPreviews.length > 0
+                      {galleryLoading
+                        ? "Processing..."
+                        : galleryPreviews.length > 0
                         ? "Add More Images"
                         : "Upload Gallery Images"}
                     </Button>
 
                     <FormDescription>
                       Upload up to 10 images for your business gallery. Each
-                      image must be less than 5MB. JPEG, PNG, GIF, or WEBP
-                      format.
+                      image will be automatically resized to 800x600px max.
+                      JPEG, PNG, GIF, or WEBP format.
                     </FormDescription>
                     <FormMessage />
                   </div>
@@ -714,7 +798,13 @@ export default function BusinessOnboardingForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={isSubmitting || isPending}
+            disabled={
+              isSubmitting ||
+              isPending ||
+              logoLoading ||
+              bannerLoading ||
+              galleryLoading
+            }
           >
             {isSubmitting || isPending
               ? "Submitting..."
