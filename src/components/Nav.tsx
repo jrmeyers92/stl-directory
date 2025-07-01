@@ -24,6 +24,7 @@ import {
 import Link from "next/link";
 import * as React from "react";
 import { ModeToggle } from "./ModeToggle";
+import { ThemeToggle } from "./ThemeToggle";
 import { buttonVariants } from "./ui/button";
 
 const Nav = () => {
@@ -119,6 +120,7 @@ const Nav = () => {
           </NavigationMenu> */}
 
           {/* Auth Buttons */}
+          <ThemeToggle />
           <SignedIn>
             <div className="flex items-center gap-4">
               <Link
