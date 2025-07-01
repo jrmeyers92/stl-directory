@@ -389,9 +389,12 @@ export default async function BusinessPage({
                 {/* Write Review Button */}
                 <SignedIn>
                   <div className="mt-6 pt-6 border-t border-gray-100">
-                    <Button className="w-full sm:w-auto" variant="outline">
+                    <Link
+                      href={`/leave-review/${id}`}
+                      className="w-full sm:w-auto"
+                    >
                       Write a Review
-                    </Button>
+                    </Link>
                   </div>
                 </SignedIn>
               </CardContent>
