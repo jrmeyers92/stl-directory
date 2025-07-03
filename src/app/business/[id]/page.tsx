@@ -20,49 +20,6 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-interface Business {
-  id: string;
-  business_name: string;
-  business_category: string;
-  business_description?: string;
-  business_email?: string;
-  business_phone?: string;
-  business_website?: string;
-  business_address?: string;
-  business_city?: string;
-  business_state?: string;
-  business_zip?: string;
-  logo_url?: string;
-  banner_image_url?: string;
-  gallery_images?: string;
-  average_rating?: number;
-  review_count?: number;
-  is_featured?: boolean;
-  is_verified?: boolean;
-  view_count?: number;
-}
-
-interface Review {
-  id: string;
-  clerk_id: string;
-  business_id: string;
-  created_at: string;
-  updated_at: string;
-  rating: number;
-  review_title?: string;
-  review_content: string;
-  reviewer_name: string;
-  reviewer_email?: string;
-  is_verified?: boolean;
-  is_featured?: boolean;
-  is_approved?: boolean;
-  helpful_count?: number;
-  reported_count?: number;
-  admin_notes?: string;
-  review_meta?: any;
-  review_images?: string[];
-}
-
 export default async function BusinessPage({
   params,
 }: {
@@ -338,18 +295,20 @@ export default async function BusinessPage({
                         {review.review_images &&
                           review.review_images.length > 0 && (
                             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
-                              {review.review_images.map((imageUrl, index) => (
-                                <div
-                                  key={index}
-                                  className="aspect-square rounded-lg overflow-hidden bg-gray-100"
-                                >
-                                  <img
-                                    src={imageUrl}
-                                    alt={`Review image ${index + 1}`}
-                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-200 cursor-pointer"
-                                  />
-                                </div>
-                              ))}
+                              {review.review_images.map(
+                                (imageUrl: string, index: number) => (
+                                  <div
+                                    key={index}
+                                    className="aspect-square rounded-lg overflow-hidden bg-gray-100"
+                                  >
+                                    <img
+                                      src={imageUrl}
+                                      alt={`Review image ${index + 1}`}
+                                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-200 cursor-pointer"
+                                    />
+                                  </div>
+                                )
+                              )}
                             </div>
                           )}
 

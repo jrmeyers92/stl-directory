@@ -1,5 +1,6 @@
 "use server";
 
+import { businessCategories, getCategorySlug } from "@/data/businessCategory";
 import {
   businessOnboardingDBSchema,
   businessOnboardingFormSchema,
@@ -190,6 +191,7 @@ export async function completeBusinessOnboarding(
       social_media: JSON.stringify(filteredSocialMedia),
       logo_url: logoUrl,
       banner_image_url: bannerImageUrl,
+      business_category_slug: getCategorySlug(businessData.businessCategory),
       gallery_images:
         galleryImageUrls.length > 0 ? JSON.stringify(galleryImageUrls) : null,
       is_active: true, // Set to false if you want to review businesses before activation

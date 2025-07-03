@@ -5,14 +5,6 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-interface Business {
-  id: string;
-  business_name: string;
-  business_category: string;
-  logo_url?: string;
-  banner_image_url?: string;
-}
-
 export default async function LeaveReviewPage({
   params,
 }: {
