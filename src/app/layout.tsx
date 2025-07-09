@@ -3,6 +3,7 @@ import Nav from "@/components/Nav";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ClerkProvider } from "@clerk/nextjs";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -47,6 +48,7 @@ export default function RootLayout({
             <Toaster />
           </ThemeProvider>
         </body>
+        <GoogleAnalytics gaId="G-KYSJVG96LE" />
       </html>
     </ClerkProvider>
   );
