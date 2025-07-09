@@ -20,6 +20,30 @@ type UploadResult = {
   path: string | null;
 };
 
+// File validation constants
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_GALLERY_IMAGES = 10;
+
+// Helper function to validate file
+function validateFile(file: File): { valid: boolean; error?: string } {
+  if (file.size > MAX_FILE_SIZE) {
+    return {
+      valid: false,
+      error: `File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`,
+    };
+  }
+
+  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    return {
+      valid: false,
+      error: `File type must be one of: ${ALLOWED_FILE_TYPES.join(", ")}`,
+    };
+  }
+
+  return { valid: true };
+}
+
 // Helper function to upload a single file
 async function uploadFile(
   supabase: SupabaseClient,
@@ -27,6 +51,12 @@ async function uploadFile(
   userId: string,
   folder: string
 ): Promise<UploadResult> {
+  // Validate file first
+  const validation = validateFile(file);
+  if (!validation.valid) {
+    return { success: false, error: validation.error!, path: null };
+  }
+
   // Generate a unique filename with original extension
   const fileExt = file.name.split(".").pop();
   const fileName = `${userId}-${uuidv4()}.${fileExt}`;
@@ -53,9 +83,28 @@ async function uploadFile(
   return { success: true, error: null, path: urlData.publicUrl };
 }
 
+// Helper function to clean up uploaded files
+async function cleanupFiles(supabase: SupabaseClient, filePaths: string[]) {
+  for (const path of filePaths) {
+    try {
+      // Extract the file path from the public URL
+      const urlParts = path.split("/");
+      const fileName = urlParts[urlParts.length - 1];
+      const folder = urlParts[urlParts.length - 2];
+      const filePath = `${folder}/${fileName}`;
+
+      await supabase.storage.from("stl-directory").remove([filePath]);
+    } catch (error) {
+      console.error("Error cleaning up file:", path, error);
+    }
+  }
+}
+
 export async function completeBusinessOnboarding(
   businessData: BusinessOnboardingValues
 ) {
+  const uploadedFiles: string[] = [];
+
   try {
     // Validate form data with the form schema
     try {
@@ -78,7 +127,30 @@ export async function completeBusinessOnboarding(
       return { success: false, error: "User not authenticated" };
     }
 
+    // Additional validation
+    if (
+      businessData.galleryImages &&
+      businessData.galleryImages.length > MAX_GALLERY_IMAGES
+    ) {
+      return {
+        success: false,
+        error: `Maximum ${MAX_GALLERY_IMAGES} gallery images allowed`,
+      };
+    }
+
     const supabase = await createClient();
+
+    // Check if business already exists for this user
+    const { data: existingBusiness } = await supabase
+      .from("stl_directory_businesses")
+      .select("id")
+      .eq("clerk_id", userId)
+      .single();
+
+    if (existingBusiness) {
+      return { success: false, error: "Business already exists for this user" };
+    }
+
     let logoUrl: string | null = null;
     let bannerImageUrl: string | null = null;
     const galleryImageUrls: string[] = [];
@@ -92,10 +164,14 @@ export async function completeBusinessOnboarding(
         "business-profiles"
       );
       if (!logoUpload.success) {
-        return { success: false, error: logoUpload.error || "Upload failed" };
+        return {
+          success: false,
+          error: logoUpload.error || "Logo upload failed",
+        };
       }
       if (logoUpload.path) {
         logoUrl = logoUpload.path;
+        uploadedFiles.push(logoUrl);
       }
     }
 
@@ -108,10 +184,16 @@ export async function completeBusinessOnboarding(
         "business-banners"
       );
       if (!bannerUpload.success) {
-        return { success: false, error: bannerUpload.error || "Upload failed" };
+        // Clean up any previously uploaded files
+        await cleanupFiles(supabase, uploadedFiles);
+        return {
+          success: false,
+          error: bannerUpload.error || "Banner upload failed",
+        };
       }
       if (bannerUpload.path) {
         bannerImageUrl = bannerUpload.path;
+        uploadedFiles.push(bannerImageUrl);
       }
     }
 
@@ -125,13 +207,16 @@ export async function completeBusinessOnboarding(
           "business-galleries"
         );
         if (!galleryUpload.success) {
+          // Clean up any previously uploaded files
+          await cleanupFiles(supabase, uploadedFiles);
           return {
             success: false,
-            error: galleryUpload.error || "Upload failed",
+            error: galleryUpload.error || "Gallery upload failed",
           };
         }
         if (galleryUpload.path) {
           galleryImageUrls.push(galleryUpload.path);
+          uploadedFiles.push(galleryUpload.path);
         }
       }
     }
@@ -141,42 +226,8 @@ export async function completeBusinessOnboarding(
       (item) => item.platform && item.url
     );
 
-    // Prepare database object with all image URLs
+    // Prepare database object - use consistent naming
     const dbData = {
-      clerkId: userId,
-      businessName: businessData.businessName,
-      businessCategory: businessData.businessCategory,
-      businessDescription: businessData.businessDescription,
-      businessEmail: businessData.businessEmail,
-      businessPhone: businessData.businessPhone,
-      businessWebsite: businessData.businessWebsite || null,
-      businessAddress: businessData.businessAddress,
-      businessCity: businessData.businessCity,
-      businessState: businessData.businessState,
-      businessZip: businessData.businessZip,
-      socialMedia: filteredSocialMedia,
-      logoImageUrl: logoUrl,
-      bannerImageUrl: bannerImageUrl,
-      galleryImageUrls: galleryImageUrls.length > 0 ? galleryImageUrls : null,
-    };
-
-    // Validate the DB data before inserting
-    try {
-      businessOnboardingDBSchema.parse(dbData);
-    } catch (dbValidationError) {
-      if (dbValidationError instanceof z.ZodError) {
-        return {
-          success: false,
-          error: `Database validation failed: ${dbValidationError.errors
-            .map((e) => e.message)
-            .join(", ")}`,
-        };
-      }
-      throw dbValidationError;
-    }
-
-    // Insert business data into database
-    const { error } = await supabase.from("stl_directory_businesses").insert({
       clerk_id: userId,
       business_name: businessData.businessName,
       business_category: businessData.businessCategory,
@@ -188,25 +239,49 @@ export async function completeBusinessOnboarding(
       business_city: businessData.businessCity,
       business_state: businessData.businessState,
       business_zip: businessData.businessZip,
-      social_media: JSON.stringify(filteredSocialMedia),
+      social_media: filteredSocialMedia,
       logo_url: logoUrl,
       banner_image_url: bannerImageUrl,
       business_category_slug: getCategorySlug(businessData.businessCategory),
-      gallery_images:
-        galleryImageUrls.length > 0 ? JSON.stringify(galleryImageUrls) : null,
-      is_active: true, // Set to false if you want to review businesses before activation
+      gallery_images: galleryImageUrls.length > 0 ? galleryImageUrls : null,
+      is_active: true,
+    };
+
+    // Insert business data into database
+    const { error } = await supabase.from("stl_directory_businesses").insert({
+      clerk_id: dbData.clerk_id,
+      business_name: dbData.business_name,
+      business_category: dbData.business_category,
+      business_description: dbData.business_description,
+      business_email: dbData.business_email,
+      business_phone: dbData.business_phone,
+      business_website: dbData.business_website,
+      business_address: dbData.business_address,
+      business_city: dbData.business_city,
+      business_state: dbData.business_state,
+      business_zip: dbData.business_zip,
+      social_media: JSON.stringify(dbData.social_media),
+      logo_url: dbData.logo_url,
+      banner_image_url: dbData.banner_image_url,
+      business_category_slug: dbData.business_category_slug,
+      gallery_images: dbData.gallery_images
+        ? JSON.stringify(dbData.gallery_images)
+        : null,
+      is_active: dbData.is_active,
     });
 
     if (error) {
       console.error("Supabase error:", error);
+      // Clean up uploaded files on database error
+      await cleanupFiles(supabase, uploadedFiles);
       return { success: false, error: "Failed to create business in database" };
     }
 
+    // Update user metadata
     const client = await clerkClient();
-
     await client.users.updateUserMetadata(userId, {
       publicMetadata: {
-        role: "businessOwner", // Ensure role is set correctly
+        role: "businessOwner",
         onboardingComplete: true,
       },
     });
@@ -214,6 +289,9 @@ export async function completeBusinessOnboarding(
     return { success: true };
   } catch (error) {
     console.error("Error completing onboarding:", error);
+    // Clean up uploaded files on any error
+    const supabase = await createClient();
+    await cleanupFiles(supabase, uploadedFiles);
     return { success: false, error: "Failed to complete onboarding" };
   }
 }
@@ -243,7 +321,6 @@ export async function setRole(formData: FormData) {
       },
     });
 
-    // Return user role in the response so client doesn't need to fetch it separately
     return {
       success: true,
       role: role,

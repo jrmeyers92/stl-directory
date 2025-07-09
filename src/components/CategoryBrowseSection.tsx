@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { businessCategories, getCategorySlug } from "@/data/businessCategory";
 import { createClient } from "@/utils/supabase/create-client/client";
 import {
   Cake,
@@ -154,7 +155,9 @@ const CategoryBrowseSection = () => {
               {displayedCategories.map((category) => (
                 <Link
                   key={category}
-                  href={`/categories/${encodeURIComponent(category)}`}
+                  href={`/categories/${encodeURIComponent(
+                    getCategorySlug(category)
+                  )}`}
                 >
                   <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-300 h-full">
                     <CardContent className="flex flex-col items-center justify-center text-center p-6">

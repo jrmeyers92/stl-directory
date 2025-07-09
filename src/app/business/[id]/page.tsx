@@ -5,17 +5,24 @@ import { Separator } from "@/components/ui/separator";
 import ViewCounter from "@/components/ViewCounter";
 import { createClient } from "@/utils/supabase/create-client/server";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import {
   ArrowLeft,
+  Calendar,
   CheckCircle,
   Eye,
+  Filter,
+  Flag,
   Globe,
   Heart,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   Share2,
   Star,
+  ThumbsUp,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -27,6 +34,7 @@ export default async function BusinessPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const user = await currentUser();
 
   // Fetch business by ID
   const { data: business, error } = await supabase
@@ -39,17 +47,42 @@ export default async function BusinessPage({
     notFound();
   }
 
-  // Fetch approved reviews for this business
+  // Fetch approved reviews for this business with proper ordering
   const { data: reviews, error: reviewsError } = await supabase
     .from("stl_directory_reviews")
     .select("*")
     .eq("business_id", id)
-    .eq("is_approved", true)
+    .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
   if (reviewsError) {
     console.error("Error fetching reviews:", reviewsError);
   }
+
+  // Check if current user has already reviewed this business
+  let userHasReviewed = false;
+  if (user) {
+    const { data: userReview } = await supabase
+      .from("stl_directory_reviews")
+      .select("id")
+      .eq("business_id", id)
+      .eq("clerk_id", user.id)
+      .single();
+
+    userHasReviewed = !!userReview;
+  }
+
+  // Calculate rating distribution
+  const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
+    rating,
+    count: reviews?.filter((r) => r.rating === rating).length || 0,
+    percentage: reviews?.length
+      ? (
+          (reviews.filter((r) => r.rating === rating).length / reviews.length) *
+          100
+        ).toFixed(0)
+      : 0,
+  }));
 
   // Parse gallery images if they exist
   let galleryImages: string[] = [];
@@ -60,6 +93,28 @@ export default async function BusinessPage({
       console.error("Error parsing gallery images:", e);
     }
   }
+
+  // Helper function to get review display name
+  const getReviewerDisplayName = (review: any) => {
+    if (review.reviewer_first_name && review.reviewer_last_name) {
+      return `${review.reviewer_first_name} ${review.reviewer_last_name}`;
+    }
+    if (review.reviewer_username) {
+      return review.reviewer_username;
+    }
+    return review.reviewer_name || "Anonymous";
+  };
+
+  // Helper function to get reviewer initials
+  const getReviewerInitials = (review: any) => {
+    const name = getReviewerDisplayName(review);
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -144,7 +199,7 @@ export default async function BusinessPage({
                       <div className="flex items-center space-x-1 bg-amber-50 px-3 py-2 rounded-lg">
                         <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
                         <span className="font-bold text-lg">
-                          {business.average_rating}
+                          {Number(business.average_rating).toFixed(1)}
                         </span>
                         <span className="text-gray-600">
                           ({business.review_count || 0} reviews)
@@ -195,166 +250,276 @@ export default async function BusinessPage({
             <Card className="bg-white shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold">Reviews</h2>
-                  {business.average_rating && (
-                    <div className="flex items-center space-x-2">
-                      <div className="flex items-center">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`h-4 w-4 ${
-                              star <= Math.round(business.average_rating!)
-                                ? "fill-amber-400 text-amber-400"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="font-semibold">
-                        {business.average_rating}
-                      </span>
-                      <span className="text-gray-500">
-                        ({business.review_count || 0} reviews)
-                      </span>
-                    </div>
-                  )}
+                  <h2 className="text-xl font-semibold">
+                    Customer Reviews ({reviews?.length || 0})
+                  </h2>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm">
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filter
+                    </Button>
+                  </div>
                 </div>
 
-                {/* Reviews List */}
-                {reviews && reviews.length > 0 ? (
-                  <div className="space-y-6">
-                    {reviews.map((review) => (
-                      <div
-                        key={review.id}
-                        className="border-b border-gray-100 last:border-0 pb-6 last:pb-0"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center space-x-3">
-                            <div className="flex-shrink-0">
-                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                {review.reviewer_name.charAt(0).toUpperCase()}
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex items-center space-x-2">
-                                <h4 className="font-semibold text-gray-900">
-                                  {review.reviewer_name}
-                                </h4>
-                                {review.is_verified && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-xs border-green-200 text-green-700"
-                                  >
-                                    <CheckCircle className="mr-1 h-3 w-3" />
-                                    Verified
-                                  </Badge>
-                                )}
-                                {review.is_featured && (
-                                  <Badge className="text-xs bg-amber-100 text-amber-800">
-                                    ⭐ Featured
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-sm text-gray-500">
-                                {new Date(review.created_at).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  }
-                                )}
-                              </p>
-                            </div>
+                {/* Rating Overview */}
+                {business.average_rating && reviews && reviews.length > 0 && (
+                  <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                      <div className="flex items-center space-x-4">
+                        <div className="text-center">
+                          <div className="text-4xl font-bold text-gray-900">
+                            {Number(business.average_rating).toFixed(1)}
                           </div>
-                          <div className="flex items-center space-x-1">
+                          <div className="flex items-center justify-center space-x-1 mt-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <Star
                                 key={star}
                                 className={`h-4 w-4 ${
-                                  star <= review.rating
+                                  star <= Math.round(business.average_rating!)
                                     ? "fill-amber-400 text-amber-400"
                                     : "text-gray-300"
                                 }`}
                               />
                             ))}
                           </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {business.review_count || 0} reviews
+                          </div>
                         </div>
+                      </div>
 
-                        {review.review_title && (
-                          <h5 className="font-semibold text-gray-900 mb-2">
-                            {review.review_title}
-                          </h5>
-                        )}
-
-                        <p className="text-gray-700 leading-relaxed mb-4 whitespace-pre-line">
-                          {review.review_content}
-                        </p>
-
-                        {/* Review Images */}
-                        {review.review_images &&
-                          review.review_images.length > 0 && (
-                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
-                              {review.review_images.map(
-                                (imageUrl: string, index: number) => (
-                                  <div
-                                    key={index}
-                                    className="aspect-square rounded-lg overflow-hidden bg-gray-100"
-                                  >
-                                    <img
-                                      src={imageUrl}
-                                      alt={`Review image ${index + 1}`}
-                                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-200 cursor-pointer"
-                                    />
-                                  </div>
-                                )
-                              )}
+                      {/* Rating Distribution */}
+                      <div className="flex-1 max-w-md">
+                        {ratingDistribution.map(
+                          ({ rating, count, percentage }) => (
+                            <div
+                              key={rating}
+                              className="flex items-center space-x-2 mb-1"
+                            >
+                              <span className="text-sm font-medium w-8">
+                                {rating}★
+                              </span>
+                              <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-amber-400 h-2 rounded-full transition-all duration-300"
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                              <span className="text-sm text-gray-600 w-8">
+                                {count}
+                              </span>
                             </div>
-                          )}
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                        {/* Review Actions */}
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <button className="flex items-center space-x-1 hover:text-gray-700 transition-colors">
-                            <span>👍</span>
-                            <span>Helpful ({review.helpful_count || 0})</span>
-                          </button>
-                          <button className="hover:text-gray-700 transition-colors">
-                            Reply
-                          </button>
-                          <button className="hover:text-gray-700 transition-colors">
-                            Report
-                          </button>
+                {/* Reviews List */}
+                {reviews && reviews.length > 0 ? (
+                  <div className="space-y-8">
+                    {reviews.map((review) => (
+                      <div
+                        key={review.id}
+                        className="border-b border-gray-100 last:border-0 pb-8 last:pb-0"
+                      >
+                        <div className="flex items-start space-x-4">
+                          {/* Reviewer Avatar */}
+                          <div className="flex-shrink-0">
+                            {review.reviewer_avatar_url ? (
+                              <img
+                                src={review.reviewer_avatar_url}
+                                alt={getReviewerDisplayName(review)}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                {getReviewerInitials(review)}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Review Content */}
+                          <div className="flex-1 min-w-0">
+                            {/* Review Header */}
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <h4 className="font-semibold text-gray-900">
+                                    {getReviewerDisplayName(review)}
+                                  </h4>
+                                  {review.is_verified && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs border-green-200 text-green-700"
+                                    >
+                                      <CheckCircle className="mr-1 h-3 w-3" />
+                                      Verified
+                                    </Badge>
+                                  )}
+                                  {review.is_featured && (
+                                    <Badge className="text-xs bg-amber-100 text-amber-800">
+                                      ⭐ Featured
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-2 text-sm text-gray-500">
+                                  <div className="flex items-center space-x-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star
+                                        key={star}
+                                        className={`h-4 w-4 ${
+                                          star <= review.rating
+                                            ? "fill-amber-400 text-amber-400"
+                                            : "text-gray-300"
+                                        }`}
+                                      />
+                                    ))}
+                                  </div>
+                                  <span>•</span>
+                                  <div className="flex items-center space-x-1">
+                                    <Calendar className="h-3 w-3" />
+                                    <span>
+                                      {new Date(
+                                        review.created_at
+                                      ).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                      })}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Review Title */}
+                            {review.review_title && (
+                              <h5 className="font-semibold text-gray-900 mb-3 text-lg">
+                                {review.review_title}
+                              </h5>
+                            )}
+
+                            {/* Review Content */}
+                            <p className="text-gray-700 leading-relaxed mb-4 whitespace-pre-line">
+                              {review.review_content}
+                            </p>
+
+                            {/* Review Images */}
+                            {review.review_images &&
+                              review.review_images.length > 0 && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                                  {review.review_images.map(
+                                    (imageUrl: string, index: number) => (
+                                      <div
+                                        key={index}
+                                        className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:shadow-md transition-shadow cursor-pointer"
+                                      >
+                                        <img
+                                          src={imageUrl}
+                                          alt={`Review image ${index + 1}`}
+                                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                        />
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              )}
+
+                            {/* Review Actions */}
+                            <div className="flex items-center space-x-6 text-sm">
+                              <button className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 transition-colors">
+                                <ThumbsUp className="h-4 w-4" />
+                                <span>Helpful</span>
+                                {review.helpful_count > 0 && (
+                                  <span className="font-medium">
+                                    ({review.helpful_count})
+                                  </span>
+                                )}
+                              </button>
+                              <button className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 transition-colors">
+                                <MessageCircle className="h-4 w-4" />
+                                <span>Reply</span>
+                              </button>
+                              <button className="flex items-center space-x-2 text-gray-500 hover:text-red-600 transition-colors">
+                                <Flag className="h-4 w-4" />
+                                <span>Report</span>
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <div className="text-gray-400 mb-2">
-                      <Star className="h-12 w-12 mx-auto" />
+                  <div className="text-center py-12">
+                    <div className="text-gray-400 mb-4">
+                      <Star className="h-16 w-16 mx-auto" />
                     </div>
-                    <p className="text-gray-500">No reviews yet</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No reviews yet
+                    </h3>
+                    <p className="text-gray-500 mb-4">
+                      Be the first to share your experience with this business!
+                    </p>
                     <SignedIn>
-                      <p className="text-sm text-gray-400">
-                        Be the first to leave a review!
-                      </p>
+                      {!userHasReviewed && (
+                        <Button asChild>
+                          <Link href={`/leave-review/${id}`}>
+                            Write the First Review
+                          </Link>
+                        </Button>
+                      )}
                     </SignedIn>
                     <SignedOut>
-                      Sign up or Sign in to be the first to leave a review!
+                      <p className="text-sm text-gray-400">
+                        <Link
+                          href="/sign-in"
+                          className="text-primary hover:underline"
+                        >
+                          Sign in
+                        </Link>{" "}
+                        to leave a review
+                      </p>
                     </SignedOut>
                   </div>
                 )}
 
                 {/* Write Review Button */}
                 <SignedIn>
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <Link
-                      href={`/leave-review/${id}`}
-                      className="w-full sm:w-auto"
-                    >
-                      Write a Review
-                    </Link>
-                  </div>
+                  {reviews && reviews.length > 0 && !userHasReviewed && (
+                    <div className="mt-8 pt-6 border-t border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">
+                            Share Your Experience
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            Help others by writing a review
+                          </p>
+                        </div>
+                        <Button asChild>
+                          <Link href={`/leave-review/${id}`}>
+                            <User className="mr-2 h-4 w-4" />
+                            Write a Review
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {userHasReviewed && (
+                    <div className="mt-8 pt-6 border-t border-gray-100">
+                      <div className="flex items-center justify-center">
+                        <div className="text-center">
+                          <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600">
+                            You have already reviewed this business
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </SignedIn>
               </CardContent>
             </Card>

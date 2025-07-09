@@ -1,5 +1,6 @@
 "use client";
 
+import { submitReview } from "@/actions/_createReview";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -18,7 +19,7 @@ import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle, Loader2, Star, Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -45,7 +46,7 @@ interface ReviewFormProps {
 export default function ReviewForm({ businessId }: ReviewFormProps) {
   const { user } = useUser();
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [success, setSuccess] = useState(false);
 
   // Image handling states
@@ -66,9 +67,6 @@ export default function ReviewForm({ businessId }: ReviewFormProps) {
       reviewContent: "",
     },
   });
-
-  // Watch the rating value for visual feedback
-  // const currentRating = form.watch("rating");
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -107,7 +105,7 @@ export default function ReviewForm({ businessId }: ReviewFormProps) {
         const filePath = `review-images/${businessId}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-          .from("business-images")
+          .from("stl-directory")
           .upload(filePath, file);
 
         if (uploadError) {
@@ -119,7 +117,7 @@ export default function ReviewForm({ businessId }: ReviewFormProps) {
         // Get public URL
         const {
           data: { publicUrl },
-        } = supabase.storage.from("business-images").getPublicUrl(filePath);
+        } = supabase.storage.from("stl-directory").getPublicUrl(filePath);
 
         uploadedUrls.push(publicUrl);
       }
@@ -153,51 +151,41 @@ export default function ReviewForm({ businessId }: ReviewFormProps) {
       return;
     }
 
-    setIsSubmitting(true);
+    startTransition(async () => {
+      try {
+        // Create FormData for the server action
+        const formData = new FormData();
+        formData.append("rating", values.rating.toString());
+        formData.append("reviewTitle", values.reviewTitle || "");
+        formData.append("reviewContent", values.reviewContent);
+        formData.append("businessId", businessId);
+        formData.append("imageUrls", JSON.stringify(imageUrls));
 
-    try {
-      const supabase = createClient();
+        // Call the server action
+        const result = await submitReview(formData);
 
-      const reviewData = {
-        clerk_id: user.id,
-        business_id: businessId,
-        rating: values.rating,
-        review_title: values.reviewTitle?.trim() || null,
-        review_content: values.reviewContent.trim(),
-        reviewer_name: user.fullName || user.firstName || "Anonymous",
-        reviewer_email: user.emailAddresses?.[0]?.emailAddress || null,
-        review_images: imageUrls.length > 0 ? imageUrls : null,
-        is_verified: false,
-        is_featured: false,
-        is_approved: false, // Reviews need admin approval
-      };
+        if (result.success) {
+          setSuccess(true);
+          toast.success("Review submitted successfully!", {
+            description: result.message,
+          });
 
-      const { error: insertError } = await supabase
-        .from("stl_directory_reviews")
-        .insert([reviewData]);
-
-      if (insertError) {
-        throw insertError;
+          // Redirect to business page after 3 seconds
+          setTimeout(() => {
+            router.push(`/business/${businessId}`);
+          }, 3000);
+        } else {
+          toast.error(result.error || "Failed to submit review", {
+            description: "Please try again later.",
+          });
+        }
+      } catch (error) {
+        console.error("Review submission error:", error);
+        toast.error("Failed to submit review", {
+          description: "Please try again later.",
+        });
       }
-
-      setSuccess(true);
-
-      toast.success("Review submitted successfully!", {
-        description: "Your review will be visible once approved by our team.",
-      });
-
-      // Redirect to business page after 3 seconds
-      setTimeout(() => {
-        router.push(`/business/${businessId}`);
-      }, 3000);
-    } catch (err) {
-      console.error("Review submission error:", err);
-      toast.error("Failed to submit review", {
-        description: "Please try again later.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    });
   }
 
   if (success) {
@@ -315,19 +303,17 @@ export default function ReviewForm({ businessId }: ReviewFormProps) {
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    <div className="flex justify-between">
-                      <span>{field.value.length} characters (minimum 10)</span>
-                      <span
-                        className={
-                          field.value.length >= 50 ? "text-green-600" : ""
-                        }
-                      >
-                        {field.value.length >= 50
-                          ? "Great detail!"
-                          : "Add more detail for a helpful review"}
-                      </span>
-                    </div>
+                  <FormDescription className="flex justify-between">
+                    <span>{field.value.length} characters (minimum 10)</span>
+                    <span
+                      className={
+                        field.value.length >= 50 ? "text-green-600" : ""
+                      }
+                    >
+                      {field.value.length >= 50
+                        ? "Great detail!"
+                        : "Add more detail for a helpful review"}
+                    </span>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -412,10 +398,10 @@ export default function ReviewForm({ businessId }: ReviewFormProps) {
                 <Button
                   type="submit"
                   size="lg"
-                  disabled={isSubmitting || !form.formState.isValid}
+                  disabled={isPending || !form.formState.isValid}
                   className="w-full sm:w-auto"
                 >
-                  {isSubmitting ? (
+                  {isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Submitting Review...

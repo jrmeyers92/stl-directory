@@ -1,5 +1,6 @@
 import BusinessCard from "@/components/BusinessCard";
 import { Badge } from "@/components/ui/badge";
+import { getCategoryFromSlug } from "@/data/businessCategory";
 import { createClient } from "@/utils/supabase/create-client/server";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -17,7 +18,7 @@ export default async function Page({
   const { data: businesses, error } = await supabase
     .from("stl_directory_businesses")
     .select("*")
-    .eq("business_category", category);
+    .eq("business_category_slug", category);
 
   if (error) {
     console.error("Error fetching businesses:", error);
@@ -39,14 +40,16 @@ export default async function Page({
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to all categories
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight">{category}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {getCategoryFromSlug(category)}
+          </h1>
           <p className="text-muted-foreground mt-1">
             Found {businesses.length} business
             {businesses.length !== 1 ? "es" : ""}
           </p>
         </div>
         <Badge variant="outline" className="px-3 py-1 text-sm">
-          {category}
+          {getCategoryFromSlug(category)}
         </Badge>
       </div>
 

@@ -332,7 +332,7 @@ export default function BusinessOnboardingForm() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {businessCategories.map((category) => (
+                      {Object.keys(businessCategories).map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
                         </SelectItem>
