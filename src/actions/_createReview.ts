@@ -152,7 +152,7 @@ export async function submitReview(formData: FormData) {
     }
 
     // Check if user has already reviewed this business
-    const { data: existingReview, error: existingReviewError } = await supabase
+    const { data: existingReview } = await supabase
       .from("stl_directory_reviews")
       .select("id")
       .eq("clerk_id", user.id)

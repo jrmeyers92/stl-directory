@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { businessCategories, getCategorySlug } from "@/data/businessCategory";
+import { getCategorySlug } from "@/data/businessCategory";
 import { createClient } from "@/utils/supabase/create-client/client";
 import {
   Cake,

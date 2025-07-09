@@ -1,8 +1,7 @@
 "use server";
 
-import { businessCategories, getCategorySlug } from "@/data/businessCategory";
+import { getCategorySlug } from "@/data/businessCategory";
 import {
-  businessOnboardingDBSchema,
   businessOnboardingFormSchema,
   BusinessOnboardingValues,
 } from "@/schemas/businessSchema";

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import ViewCounter from "@/components/ViewCounter";
+import Review from "@/schemas/reviewSchema";
 import { createClient } from "@/utils/supabase/create-client/server";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
@@ -59,6 +60,9 @@ export default async function BusinessPage({
     console.error("Error fetching reviews:", reviewsError);
   }
 
+  // Type the reviews data
+  const typedReviews: Review[] = reviews || [];
+
   // Check if current user has already reviewed this business
   let userHasReviewed = false;
   if (user) {
@@ -110,7 +114,7 @@ export default async function BusinessPage({
     const name = getReviewerDisplayName(review);
     return name
       .split(" ")
-      .map((n) => n[0])
+      .map((n: string) => n[0])
       .join("")
       .toUpperCase()
       .slice(0, 2);
@@ -251,7 +255,7 @@ export default async function BusinessPage({
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold">
-                    Customer Reviews ({reviews?.length || 0})
+                    Customer Reviews ({typedReviews?.length || 0})
                   </h2>
                   <div className="flex items-center space-x-2">
                     <Button variant="outline" size="sm">
@@ -262,64 +266,66 @@ export default async function BusinessPage({
                 </div>
 
                 {/* Rating Overview */}
-                {business.average_rating && reviews && reviews.length > 0 && (
-                  <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                      <div className="flex items-center space-x-4">
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-gray-900">
-                            {Number(business.average_rating).toFixed(1)}
-                          </div>
-                          <div className="flex items-center justify-center space-x-1 mt-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`h-4 w-4 ${
-                                  star <= Math.round(business.average_rating!)
-                                    ? "fill-amber-400 text-amber-400"
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            {business.review_count || 0} reviews
+                {business.average_rating &&
+                  typedReviews &&
+                  typedReviews.length > 0 && (
+                    <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                        <div className="flex items-center space-x-4">
+                          <div className="text-center">
+                            <div className="text-4xl font-bold text-gray-900">
+                              {Number(business.average_rating).toFixed(1)}
+                            </div>
+                            <div className="flex items-center justify-center space-x-1 mt-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`h-4 w-4 ${
+                                    star <= Math.round(business.average_rating!)
+                                      ? "fill-amber-400 text-amber-400"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              {business.review_count || 0} reviews
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Rating Distribution */}
-                      <div className="flex-1 max-w-md">
-                        {ratingDistribution.map(
-                          ({ rating, count, percentage }) => (
-                            <div
-                              key={rating}
-                              className="flex items-center space-x-2 mb-1"
-                            >
-                              <span className="text-sm font-medium w-8">
-                                {rating}★
-                              </span>
-                              <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="bg-amber-400 h-2 rounded-full transition-all duration-300"
-                                  style={{ width: `${percentage}%` }}
-                                />
+                        {/* Rating Distribution */}
+                        <div className="flex-1 max-w-md">
+                          {ratingDistribution.map(
+                            ({ rating, count, percentage }) => (
+                              <div
+                                key={rating}
+                                className="flex items-center space-x-2 mb-1"
+                              >
+                                <span className="text-sm font-medium w-8">
+                                  {rating}★
+                                </span>
+                                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className="bg-amber-400 h-2 rounded-full transition-all duration-300"
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm text-gray-600 w-8">
+                                  {count}
+                                </span>
                               </div>
-                              <span className="text-sm text-gray-600 w-8">
-                                {count}
-                              </span>
-                            </div>
-                          )
-                        )}
+                            )
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Reviews List */}
-                {reviews && reviews.length > 0 ? (
+                {typedReviews && typedReviews.length > 0 ? (
                   <div className="space-y-8">
-                    {reviews.map((review) => (
+                    {typedReviews.map((review) => (
                       <div
                         key={review.id}
                         className="border-b border-gray-100 last:border-0 pb-8 last:pb-0"
@@ -432,11 +438,11 @@ export default async function BusinessPage({
                               <button className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 transition-colors">
                                 <ThumbsUp className="h-4 w-4" />
                                 <span>Helpful</span>
-                                {review.helpful_count > 0 && (
+                                {/* {review.helpful_count?? && review.helpful_count > 0 && (
                                   <span className="font-medium">
                                     ({review.helpful_count})
                                   </span>
-                                )}
+                                )} */}
                               </button>
                               <button className="flex items-center space-x-2 text-gray-500 hover:text-gray-700 transition-colors">
                                 <MessageCircle className="h-4 w-4" />
@@ -488,26 +494,28 @@ export default async function BusinessPage({
 
                 {/* Write Review Button */}
                 <SignedIn>
-                  {reviews && reviews.length > 0 && !userHasReviewed && (
-                    <div className="mt-8 pt-6 border-t border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            Share Your Experience
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            Help others by writing a review
-                          </p>
+                  {typedReviews &&
+                    typedReviews.length > 0 &&
+                    !userHasReviewed && (
+                      <div className="mt-8 pt-6 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold text-gray-900">
+                              Share Your Experience
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              Help others by writing a review
+                            </p>
+                          </div>
+                          <Button asChild>
+                            <Link href={`/leave-review/${id}`}>
+                              <User className="mr-2 h-4 w-4" />
+                              Write a Review
+                            </Link>
+                          </Button>
                         </div>
-                        <Button asChild>
-                          <Link href={`/leave-review/${id}`}>
-                            <User className="mr-2 h-4 w-4" />
-                            Write a Review
-                          </Link>
-                        </Button>
                       </div>
-                    </div>
-                  )}
+                    )}
                   {userHasReviewed && (
                     <div className="mt-8 pt-6 border-t border-gray-100">
                       <div className="flex items-center justify-center">

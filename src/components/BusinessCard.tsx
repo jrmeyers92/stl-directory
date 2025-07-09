@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Business from "@/schemas/businessInterface";
+import Business from "@/schemas/businessSchema";
 import { Globe, MapPin, Phone, Star } from "lucide-react";
 import Link from "next/link";
 
