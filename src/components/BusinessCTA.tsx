@@ -1,6 +1,7 @@
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { ArrowRight, Building, Mail, MapPin } from "lucide-react";
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { buttonVariants } from "./ui/button";
 import {
   Card,
   CardContent,
@@ -69,14 +70,22 @@ const BusinessCTA = () => {
             </div>
 
             <CardFooter className="flex px-0 pt-8 pb-2">
-              <Button
-                asChild
-                className="bg-yellow-600 hover:bg-yellow-700 text-white"
-              >
-                <Link href="/business/register">
+              <SignedOut>
+                <Link
+                  href="/business/register"
+                  className={`${buttonVariants()} bg-yellow-600 hover:bg-yellow-700 text-white`}
+                >
                   List Your Business <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
-              </Button>
+              </SignedOut>
+              <SignedIn>
+                <Link
+                  href="/business/register"
+                  className={`${buttonVariants()} bg-yellow-600 hover:bg-yellow-700 text-white`}
+                >
+                  List Your Business <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </SignedIn>
             </CardFooter>
           </CardContent>
 

@@ -6,8 +6,18 @@ export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();
   const path = req.nextUrl.pathname;
 
-  // Skip middleware for public routes
-  if (!userId || path.startsWith("/_next") || path.startsWith("/api")) {
+  // Skip middleware for public routes and static files
+  if (path.startsWith("/_next") || path.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+  // Protect authenticated-only routes
+  if (path.startsWith("/favorites") && !userId) {
+    return NextResponse.redirect(new URL("/sign-in", req.url));
+  }
+
+  // If not authenticated, allow access to public routes
+  if (!userId) {
     return NextResponse.next();
   }
 

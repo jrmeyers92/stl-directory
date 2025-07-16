@@ -1,3 +1,4 @@
+import SaveBusinessButton from "@/components/SaveBusinessButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,7 +16,6 @@ import {
   Filter,
   Flag,
   Globe,
-  Heart,
   Mail,
   MapPin,
   MessageCircle,
@@ -74,6 +74,18 @@ export default async function BusinessPage({
       .single();
 
     userHasReviewed = !!userReview;
+  }
+
+  let userHasSaved = false;
+  if (user) {
+    const { data: isSaved } = await supabase
+      .from("stl_directory_favorites")
+      .select("id")
+      .eq("business_id", id)
+      .eq("clerk_id", user.id)
+      .single();
+
+    userHasSaved = !!isSaved;
   }
 
   // Calculate rating distribution
@@ -633,10 +645,12 @@ export default async function BusinessPage({
                   )}
 
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Heart className="mr-2 h-4 w-4" />
-                      Save
-                    </Button>
+                    {user && (
+                      <SaveBusinessButton
+                        businessId={id}
+                        isSaved={userHasSaved}
+                      />
+                    )}
                     <Button variant="outline" size="sm" className="flex-1">
                       <Share2 className="mr-2 h-4 w-4" />
                       Share
