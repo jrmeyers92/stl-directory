@@ -11,16 +11,128 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap", // Better font loading performance
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "St. Louis Wedding Vendors",
-  description: "A directory of wedding vendors in St. Louis, Missouri",
+  title: {
+    default:
+      "St. Louis Wedding Vendors Directory | Find Your Perfect Wedding Vendors",
+    template: "%s | St. Louis Wedding Vendors",
+  },
+  description:
+    "Discover the best wedding vendors in St. Louis, Missouri. Find photographers, caterers, venues, florists, and more for your perfect wedding day. Reviews, ratings, and contact information included.",
+  keywords: [
+    "St. Louis wedding vendors",
+    "Missouri wedding directory",
+    "wedding photographers St. Louis",
+    "wedding venues St. Louis",
+    "wedding caterers Missouri",
+    "St. Louis wedding planning",
+    "wedding florists St. Louis",
+    "wedding services Missouri",
+  ],
+  authors: [{ name: "St. Louis Wedding Vendors Directory" }],
+  creator: "St. Louis Wedding Vendors Directory",
+  publisher: "St. Louis Wedding Vendors Directory",
+
+  // Open Graph
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://yourdomain.com", // Replace with your actual domain
+    title: "St. Louis Wedding Vendors Directory",
+    description:
+      "Discover the best wedding vendors in St. Louis, Missouri. Find photographers, caterers, venues, florists, and more for your perfect wedding day.",
+    siteName: "St. Louis Wedding Vendors Directory",
+    images: [
+      {
+        url: "/og-image.jpg", // Add this image to your public folder
+        width: 1200,
+        height: 630,
+        alt: "St. Louis Wedding Vendors Directory",
+      },
+    ],
+  },
+
+  // Twitter Card
+  twitter: {
+    card: "summary_large_image",
+    title: "St. Louis Wedding Vendors Directory",
+    description: "Discover the best wedding vendors in St. Louis, Missouri.",
+    images: ["/og-image.jpg"], // Same image as OG
+    creator: "@yourtwitterhandle", // Replace with your Twitter handle
+  },
+
+  // Additional SEO
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
+  // Verification (add these to your domain)
+  verification: {
+    google: "your-google-verification-code", // Get from Google Search Console
+    // yandex: "your-yandex-verification-code",
+    // yahoo: "your-yahoo-verification-code",
+  },
+
+  // Mobile optimization
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
+
+  // Favicon and icons
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+  },
+
+  // Manifest for PWA
+  manifest: "/manifest.json",
+
+  // Additional meta tags
+  other: {
+    "theme-color": "#ffffff",
+    "msapplication-TileColor": "#ffffff",
+    "msapplication-config": "/browserconfig.xml",
+  },
+};
+
+// JSON-LD structured data
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "St. Louis Wedding Vendors Directory",
+  description:
+    "Discover the best wedding vendors in St. Louis, Missouri. Find photographers, caterers, venues, florists, and more for your perfect wedding day.",
+  url: "https://yourdomain.com", // Replace with your actual domain
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://yourdomain.com/search?q={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "St. Louis Wedding Vendors Directory",
+    url: "https://yourdomain.com",
+  },
 };
 
 export default function RootLayout({
@@ -31,6 +143,43 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className="h-full" suppressHydrationWarning>
+        <head>
+          {/* JSON-LD structured data */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+
+          {/* Additional meta tags for better SEO */}
+          <meta name="format-detection" content="telephone=no" />
+          <meta name="geo.region" content="US-MO" />
+          <meta name="geo.placename" content="St. Louis" />
+          <meta name="geo.position" content="38.6270;-90.1994" />
+          <meta name="ICBM" content="38.6270, -90.1994" />
+
+          {/* Preconnect to external domains for better performance */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossOrigin="anonymous"
+          />
+
+          {/* Canonical URL (should be dynamic based on current page) */}
+          <link rel="canonical" href="https://yourdomain.com" />
+
+          {/* Sitemap */}
+          <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+          {/* RSS Feed (if you have a blog) */}
+          <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="St. Louis Wedding Vendors Blog"
+            href="/feed.xml"
+          />
+        </head>
+
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
         >
@@ -40,15 +189,20 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <header>
+            <header role="banner">
               <Nav />
             </header>
-            <main className="flex-grow">{children}</main>
+
+            <main role="main" className="flex-grow">
+              {children}
+            </main>
+
             <Footer />
             <Toaster />
           </ThemeProvider>
+
+          <GoogleAnalytics gaId="G-KYSJVG96LE" />
         </body>
-        <GoogleAnalytics gaId="G-KYSJVG96LE" />
       </html>
     </ClerkProvider>
   );

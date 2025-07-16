@@ -1,4 +1,5 @@
-import Business from "@/schemas/businessschema";
+import { Badge } from "@/components/ui/badge";
+import Business from "@/schemas/businessSchema";
 import { createClient } from "@/utils/supabase/create-client/server";
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
@@ -115,9 +116,7 @@ const page = async () => {
                   )}
                 </div>
 
-                <p className="text-sm text-blue-600 mb-2">
-                  {business.business_category}
-                </p>
+                <Badge className="mb-2"> {business.business_category}</Badge>
 
                 {business.business_description && (
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">
