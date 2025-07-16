@@ -52,7 +52,7 @@ const page = async () => {
         <h1 className="text-3xl font-bold mb-8">My Favorites</h1>
         <div className="text-center py-12">
           <p className="text-gray-600 text-lg mb-4">
-            You haven't added any favorites yet.
+            You haven&apos;t added any favorites yet.
           </p>
           <Link
             href="/"
