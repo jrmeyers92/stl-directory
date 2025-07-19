@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -20,7 +20,19 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+// Separate viewport export (required by Next.js 14+)
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
+  // Add metadataBase to resolve social media images
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ),
+
   title: {
     default:
       "St. Louis Wedding Vendors Directory | Find Your Perfect Wedding Vendors",
@@ -46,14 +58,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://yourdomain.com", // Replace with your actual domain
+    url: "/", // Will be resolved with metadataBase
     title: "St. Louis Wedding Vendors Directory",
     description:
       "Discover the best wedding vendors in St. Louis, Missouri. Find photographers, caterers, venues, florists, and more for your perfect wedding day.",
     siteName: "St. Louis Wedding Vendors Directory",
     images: [
       {
-        url: "/og-image.jpg", // Add this image to your public folder
+        url: "/og-image.jpg", // Will be resolved with metadataBase
         width: 1200,
         height: 630,
         alt: "St. Louis Wedding Vendors Directory",
@@ -66,7 +78,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "St. Louis Wedding Vendors Directory",
     description: "Discover the best wedding vendors in St. Louis, Missouri.",
-    images: ["/og-image.jpg"], // Same image as OG
+    images: ["/og-image.jpg"], // Will be resolved with metadataBase
     creator: "@yourtwitterhandle", // Replace with your Twitter handle
   },
 
@@ -88,13 +100,6 @@ export const metadata: Metadata = {
     google: "your-google-verification-code", // Get from Google Search Console
     // yandex: "your-yandex-verification-code",
     // yahoo: "your-yahoo-verification-code",
-  },
-
-  // Mobile optimization
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
   },
 
   // Favicon and icons
@@ -122,16 +127,18 @@ const jsonLd = {
   name: "St. Louis Wedding Vendors Directory",
   description:
     "Discover the best wedding vendors in St. Louis, Missouri. Find photographers, caterers, venues, florists, and more for your perfect wedding day.",
-  url: "https://yourdomain.com", // Replace with your actual domain
+  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://yourdomain.com/search?q={search_term_string}",
+    target: `${
+      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+    }/search?q={search_term_string}`,
     "query-input": "required name=search_term_string",
   },
   publisher: {
     "@type": "Organization",
     name: "St. Louis Wedding Vendors Directory",
-    url: "https://yourdomain.com",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   },
 };
 
@@ -166,7 +173,10 @@ export default function RootLayout({
           />
 
           {/* Canonical URL (should be dynamic based on current page) */}
-          <link rel="canonical" href="https://yourdomain.com" />
+          <link
+            rel="canonical"
+            href={process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}
+          />
 
           {/* Sitemap */}
           <link rel="sitemap" type="application/xml" href="/sitemap.xml" />

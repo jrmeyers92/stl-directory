@@ -1,4 +1,5 @@
 import SaveBusinessButton from "@/components/SaveBusinessButton";
+import ShareButton from "@/components/ShareButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -75,6 +76,8 @@ export default async function BusinessPage({
 
     userHasReviewed = !!userReview;
   }
+
+  console.log("test");
 
   let userHasSaved = false;
   if (user) {
@@ -651,10 +654,10 @@ export default async function BusinessPage({
                         isSaved={userHasSaved}
                       />
                     )}
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share
-                    </Button>
+                    <ShareButton
+                      businessName={business.business_name}
+                      businessId={business.id}
+                    />
                   </div>
                 </div>
 

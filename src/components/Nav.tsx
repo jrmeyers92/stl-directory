@@ -136,6 +136,7 @@ const Nav = () => {
 
           <SignedOut>
             <div className="flex gap-3">
+              <ModeToggle />
               <Link href="/sign-up" className={buttonVariants({ size: "sm" })}>
                 Sign Up
               </Link>
