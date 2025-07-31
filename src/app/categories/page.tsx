@@ -6,9 +6,35 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getCategorySlug } from "@/data/businessCategory";
 import { createClient } from "@/utils/supabase/create-client/server";
 import { ArrowRight, Tags } from "lucide-react";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Wedding Vendor Categories | St. Louis Wedding Directory",
+  description: "Browse wedding vendors by category in St. Louis, Missouri. Find photographers, venues, caterers, florists, and more for your perfect wedding day.",
+  keywords: [
+    "St. Louis wedding vendors",
+    "wedding categories",
+    "Missouri wedding services", 
+    "wedding vendor directory",
+    "St. Louis wedding planning",
+  ],
+  openGraph: {
+    title: "Wedding Vendor Categories | St. Louis Wedding Directory",
+    description: "Browse wedding vendors by category in St. Louis, Missouri. Find the perfect vendors for your wedding day.",
+    type: "website",
+    locale: "en_US",
+    siteName: "St. Louis Wedding Vendors Directory",
+  },
+  twitter: {
+    card: "summary",
+    title: "Wedding Vendor Categories | St. Louis Wedding Directory", 
+    description: "Browse wedding vendors by category in St. Louis, Missouri.",
+  },
+};
 
 export default async function CategoriesPage() {
   const supabase = await createClient();
@@ -52,7 +78,7 @@ export default async function CategoriesPage() {
         {sortedCategories.map((category) => (
           <Link
             key={category}
-            href={`/categories/${encodeURIComponent(category)}`}
+            href={`/categories/${getCategorySlug(category)}`}
           >
             <Card className="h-full hover:bg-accent/10 transition-colors cursor-pointer overflow-hidden border">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

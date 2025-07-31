@@ -92,22 +92,22 @@ const Footer = () => {
               <h3 className="font-medium mb-4">Popular Categories</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/categories/Venues" className="">
+                  <Link href="/categories/venues" className="">
                     Venues
                   </Link>
                 </li>
                 <li>
-                  <Link href="/categories/Photographers" className="">
+                  <Link href="/categories/photographers" className="">
                     Photographers
                   </Link>
                 </li>
                 <li>
-                  <Link href="/categories/Caterers" className="">
+                  <Link href="/categories/caterers" className="">
                     Caterers
                   </Link>
                 </li>
                 <li>
-                  <Link href="/categories/Flourists" className="">
+                  <Link href="/categories/florists" className="">
                     Flourists
                   </Link>
                 </li>

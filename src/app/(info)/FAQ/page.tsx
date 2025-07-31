@@ -315,7 +315,8 @@ export default function FAQPage() {
             </h1>
             <p className="text-xl text-blue-100 mb-8">
               Find answers to common questions about our business directory
-              platform. Can&apos;t find what you&apos;re looking for? We&apos;re here to help!
+              platform. Can&apos;t find what you&apos;re looking for? We&apos;re
+              here to help!
             </p>
 
             {/* Search Bar */}
@@ -433,8 +434,8 @@ export default function FAQPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-gray-600">
-                    Can&apos;t find the answer you&apos;re looking for? Our support team
-                    is here to help!
+                    Can&apos;t find the answer you&apos;re looking for? Our
+                    support team is here to help!
                   </p>
                   <div className="space-y-2">
                     <Button className="w-full" asChild>
