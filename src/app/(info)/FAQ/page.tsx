@@ -7,24 +7,15 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
-  AlertTriangle,
   ArrowRight,
   Building2,
-  CheckCircle,
   CreditCard,
   HelpCircle,
-  Info,
   Mail,
   MessageCircle,
   Phone,
@@ -309,7 +300,7 @@ export default function FAQPage() {
     }
 
     return filtered;
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, faqs]);
 
   const featuredFAQs = faqs.filter((faq) => faq.featured);
 
@@ -324,7 +315,7 @@ export default function FAQPage() {
             </h1>
             <p className="text-xl text-blue-100 mb-8">
               Find answers to common questions about our business directory
-              platform. Can't find what you're looking for? We're here to help!
+              platform. Can&apos;t find what you&apos;re looking for? We&apos;re here to help!
             </p>
 
             {/* Search Bar */}
@@ -442,7 +433,7 @@ export default function FAQPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-gray-600">
-                    Can't find the answer you're looking for? Our support team
+                    Can&apos;t find the answer you&apos;re looking for? Our support team
                     is here to help!
                   </p>
                   <div className="space-y-2">
@@ -586,12 +577,10 @@ export default function FAQPage() {
                     >
                       View All FAQs
                     </Button>
-                    <Button asChild>
-                      <Link href="/contact">
-                        <Mail className="mr-2 h-4 w-4" />
-                        Ask a Question
-                      </Link>
-                    </Button>
+                    <Link href="/contact" className={buttonVariants()}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      Ask a Question
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
@@ -609,27 +598,27 @@ export default function FAQPage() {
                 platform to connect with their local community.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  className="bg-white text-blue-600 hover:bg-gray-100"
-                  asChild
+                <Link
+                  href="/add-business"
+                  className={`${buttonVariants({
+                    size: "lg",
+                    variant: "outline",
+                  })} text-blue-600`}
                 >
-                  <Link href="/add-business">
-                    <Building2 className="mr-2 h-5 w-5" />
-                    List Your Business
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white text-white hover:bg-white/10"
-                  asChild
+                  <Building2 className="mr-2 h-5 w-5" />
+                  List Your Business
+                </Link>
+
+                <Link
+                  href="/categories"
+                  className={`${buttonVariants({
+                    size: "lg",
+                    variant: "outline",
+                  })} text-blue-600`}
                 >
-                  <Link href="/categories">
-                    Browse Businesses
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
+                  Browse Businesses
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
               </div>
             </CardContent>
           </Card>

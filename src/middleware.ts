@@ -7,8 +7,11 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
-  "/api/webhooks(.*)", // Usually webhooks should be public
-  // Add other public routes as needed
+  "/api/webhooks(.*)",
+  "/about",
+  "/FAQ",
+  "/contact",
+  "/privacy-policy",
 ]);
 
 // Define API routes that need protection

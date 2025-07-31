@@ -197,7 +197,7 @@ export default function ContactPage() {
               Get in Touch
             </h1>
             <p className="text-xl text-blue-100 mb-8">
-              Have questions about our business directory? We're here to help
+              Have questions about our business directory? We&apos;re here to help
               you connect with local businesses and grow your community
               presence.
             </p>
@@ -313,7 +313,7 @@ export default function ContactPage() {
               <CardHeader>
                 <CardTitle className="text-2xl">Send Us a Message</CardTitle>
                 <CardDescription>
-                  Fill out the form below and we'll get back to you as soon as
+                  Fill out the form below and we&apos;ll get back to you as soon as
                   possible.
                 </CardDescription>
               </CardHeader>

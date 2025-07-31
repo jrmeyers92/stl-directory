@@ -16,10 +16,12 @@ export default function AboutPage() {
     <div className="container mx-auto px-4 py-12 max-w-6xl">
       {/* Hero Section */}
       <section className="mb-16 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6">About STL Local</h1>
+        <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          About STL Weddings
+        </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Connecting St. Louis to its vibrant community of local businesses and
-          service providers.
+          Your premier destination for discovering exceptional wedding vendors
+          and service providers throughout the St. Louis area.
         </p>
       </section>
 
@@ -28,31 +30,33 @@ export default function AboutPage() {
         <div>
           <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
           <p className="text-lg mb-4">
-            STL Local was born from a simple idea: make it easier for St. Louis
-            residents to discover and support the incredible local businesses
-            that make our city unique.
+            STL Weddings was created with one goal in mind: to connect engaged
+            couples with the most talented wedding professionals in the St.
+            Louis region, making wedding planning easier and more enjoyable.
           </p>
           <p className="text-lg mb-4">
-            We believe that local businesses are the backbone of our community.
-            They create jobs, preserve neighborhood character, and provide
-            personalized services that chain stores simply can&apos;t match.
+            We believe your wedding day should be perfect, and that starts with
+            finding the right team of vendors who understand your vision. From
+            photographers who capture every precious moment to caterers who
+            create unforgettable dining experiences, we&apos;ve curated the best
+            wedding professionals in St. Louis.
           </p>
           <p className="text-lg">
-            By connecting residents with local photographers, restaurants,
-            shops, contractors, and more, we&apos;re helping to build a
-            stronger, more resilient local economy for everyone.
+            By connecting couples with exceptional local wedding vendors,
+            we&apos;re helping create magical moments while supporting the
+            talented professionals who make St. Louis weddings truly special.
           </p>
         </div>
         <div className="rounded-lg overflow-hidden shadow-xl">
           <div className="relative h-64 w-full bg-gray-200">
             {/* Replace with your actual image */}
             <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-              <span>Image of St. Louis local business</span>
+              <span>Beautiful St. Louis wedding venue</span>
             </div>
             {/* Uncomment when you have an actual image
             <Image
-              src="/images/stl-local-business.jpg"
-              alt="St. Louis local business"
+              src="/images/stl-wedding-venue.jpg"
+              alt="Beautiful St. Louis wedding"
               fill
               className="object-cover"
             />
@@ -67,90 +71,87 @@ export default function AboutPage() {
         <div className="grid md:grid-cols-3 gap-8">
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-blue-600 text-xl font-bold">1</span>
+              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-rose-600 text-xl font-bold">1</span>
               </div>
-              <CardTitle>Discover</CardTitle>
+              <CardTitle>Browse</CardTitle>
             </CardHeader>
             <CardContent>
               <p>
-                Browse our comprehensive directory of local St. Louis businesses
-                across dozens of categories.
+                Explore our curated directory of wedding vendors including
+                photographers, venues, caterers, florists, and more.
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-blue-600 text-xl font-bold">2</span>
+              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-rose-600 text-xl font-bold">2</span>
               </div>
               <CardTitle>Connect</CardTitle>
             </CardHeader>
             <CardContent>
               <p>
-                Read reviews, view portfolios, and get in touch directly with
-                the businesses that interest you.
+                View portfolios, read reviews from real couples, and contact
+                vendors directly to discuss your wedding vision.
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-blue-600 text-xl font-bold">3</span>
+              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mb-4">
+                <span className="text-rose-600 text-xl font-bold">3</span>
               </div>
-              <CardTitle>Support</CardTitle>
+              <CardTitle>Plan</CardTitle>
             </CardHeader>
             <CardContent>
               <p>
-                Support the local economy by choosing St. Louis businesses for
-                your needs and services.
+                Book the perfect team of wedding professionals and plan the St.
+                Louis wedding of your dreams.
               </p>
             </CardContent>
           </Card>
         </div>
       </section>
 
-      {/* For Business Owners */}
-      <section className="mb-16 bg-gray-50 rounded-xl p-8">
+      {/* For Wedding Vendors */}
+      <section className="mb-16 bg-rose-50 rounded-xl p-8">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">
-            For St. Louis Business Owners
-          </h2>
+          <h2 className="text-3xl font-bold mb-4">For Wedding Professionals</h2>
           <p className="text-lg mb-6">
-            Are you a local St. Louis business owner? Join our directory to
-            increase your visibility, connect with new customers, and be part of
-            our mission to strengthen the local economy.
+            Are you a wedding vendor in the St. Louis area? Join our platform to
+            showcase your work, connect with engaged couples, and grow your
+            wedding business with quality leads.
           </p>
           <div className="flex justify-center gap-4">
             <Button asChild size="lg">
-              <Link href="/register">Register Your Business</Link>
+              <Link href="/register">Join as a Vendor</Link>
             </Button>
             <Button variant="outline" asChild size="lg">
-              <Link href="/business-faq">Learn More</Link>
+              <Link href="/vendor-info">Learn More</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Our Team (Optional) */}
+      {/* Our Team */}
       <section className="mb-16">
         <h2 className="text-3xl font-bold mb-8 text-center">Meet Our Team</h2>
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Replace with actual team members or remove this section if not applicable */}
           <Card>
             <CardHeader className="text-center">
               <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4">
                 {/* Placeholder for team member photo */}
               </div>
-              <CardTitle>Jane Doe</CardTitle>
-              <CardDescription>Founder & CEO</CardDescription>
+              <CardTitle>Sarah Mitchell</CardTitle>
+              <CardDescription>Founder & Wedding Specialist</CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <p>
-                St. Louis native with a passion for local businesses and
-                community building.
+                Former wedding planner with 8 years of experience helping St.
+                Louis couples create their perfect day.
               </p>
             </CardContent>
           </Card>
@@ -160,13 +161,13 @@ export default function AboutPage() {
               <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4">
                 {/* Placeholder for team member photo */}
               </div>
-              <CardTitle>John Smith</CardTitle>
-              <CardDescription>Community Manager</CardDescription>
+              <CardTitle>Michael Torres</CardTitle>
+              <CardDescription>Vendor Relations Manager</CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <p>
-                Connecting businesses with customers and helping the community
-                thrive.
+                Connecting exceptional wedding vendors with couples and
+                maintaining our high standards for quality.
               </p>
             </CardContent>
           </Card>
@@ -176,13 +177,13 @@ export default function AboutPage() {
               <div className="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4">
                 {/* Placeholder for team member photo */}
               </div>
-              <CardTitle>Emily Johnson</CardTitle>
-              <CardDescription>Lead Developer</CardDescription>
+              <CardTitle>Emma Chen</CardTitle>
+              <CardDescription>Customer Experience Lead</CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <p>
-                Building the technology that powers our mission to support local
-                businesses.
+                Ensuring every couple has an amazing experience finding their
+                dream wedding team through our platform.
               </p>
             </CardContent>
           </Card>
@@ -191,10 +192,11 @@ export default function AboutPage() {
 
       {/* Contact Section */}
       <section>
-        <div className="bg-gray-50 rounded-xl p-8 text-center">
+        <div className="bg-rose-50 rounded-xl p-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Get In Touch</h2>
           <p className="text-lg mb-6">
-            Have questions or suggestions? We&apos;d love to hear from you!
+            Planning your wedding or have questions about our platform?
+            We&apos;re here to help make your wedding planning journey seamless!
           </p>
           <Button asChild size="lg">
             <Link href="/contact">Contact Us</Link>

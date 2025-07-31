@@ -10,9 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
-  AlertTriangle,
   Calendar,
   CheckCircle,
   Cookie,
@@ -419,7 +417,7 @@ export default function PrivacyPolicyPage() {
           <Info className="h-4 w-4" />
           <AlertDescription>
             This privacy policy was last updated on{" "}
-            <strong>{lastUpdated}</strong>. We'll notify you of any significant
+            <strong>{lastUpdated}</strong>. We&apos;ll notify you of any significant
             changes via email.
           </AlertDescription>
         </Alert>
@@ -530,7 +528,7 @@ export default function PrivacyPolicyPage() {
 
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-8">
-            {policySections.map((section, index) => {
+            {policySections.map((section) => {
               const IconComponent = section.icon;
               return (
                 <Card key={section.id} id={section.id} className="scroll-mt-8">
@@ -589,7 +587,7 @@ export default function PrivacyPolicyPage() {
                 </CardTitle>
                 <CardDescription>
                   If you have any questions about this privacy policy or our
-                  data practices, please don't hesitate to reach out.
+                  data practices, please don&apos;t hesitate to reach out.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -647,8 +645,8 @@ export default function PrivacyPolicyPage() {
                 Your Privacy Matters to Us
               </h2>
               <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-                We're committed to transparency and giving you control over your
-                data. If you have any questions or concerns, we're here to help.
+                We&apos;re committed to transparency and giving you control over your
+                data. If you have any questions or concerns, we&apos;re here to help.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
