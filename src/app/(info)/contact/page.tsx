@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { isServerActionError } from "@/types/serverActions";
 import {
   Building2,
   Clock,
@@ -104,9 +105,13 @@ export default function ContactPage() {
           formRef.current.reset();
         }
       } else {
+        // Use type guard to safely access error property
+        const errorMessage = isServerActionError(result) 
+          ? result.error 
+          : "Please try again or contact us directly.";
+          
         toast.error("Failed to send message", {
-          description:
-            result.error || "Please try again or contact us directly.",
+          description: errorMessage,
         });
       }
     } catch (error) {

@@ -3,6 +3,10 @@
 import { createClient } from "@/utils/supabase/create-client/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { rateLimit, getRateLimitKey, RATE_LIMIT_CONFIGS } from "@/utils/rateLimit";
+import { createErrorResponse, createSuccessResponse, errorMessages } from "@/utils/validation";
+import { SaveBusinessResponse } from "@/types/serverActions";
+import { headers } from "next/headers";
 import { z } from "zod";
 
 // Define the schema for validation
@@ -11,7 +15,7 @@ const saveSchema = z.object({
   clerkId: z.string(),
 });
 
-export async function saveBusiness(formData: FormData) {
+export async function saveBusiness(formData: FormData): Promise<SaveBusinessResponse> {
   console.log("saveBusiness called with formData:", formData);
 
   try {
@@ -20,7 +24,17 @@ export async function saveBusiness(formData: FormData) {
     console.log("Current user:", user?.id);
 
     if (!user) {
-      return { success: false, error: "User not authenticated" };
+      return createErrorResponse(errorMessages.AUTHENTICATION_REQUIRED);
+    }
+
+    // Rate limiting
+    const headersList = await headers();
+    const ip = headersList.get("x-forwarded-for") || "unknown";
+    const rateLimitKey = getRateLimitKey("save_business", user.id, ip);
+    const rateCheck = rateLimit(rateLimitKey, RATE_LIMIT_CONFIGS.SAVE_BUSINESS);
+    
+    if (!rateCheck.allowed) {
+      return createErrorResponse(errorMessages.RATE_LIMIT_EXCEEDED);
     }
 
     // Extract and validate form data
@@ -36,12 +50,10 @@ export async function saveBusiness(formData: FormData) {
     console.log("Validation result:", validationResult);
 
     if (!validationResult.success) {
-      return {
-        success: false,
-        error: `Validation failed: ${validationResult.error.errors
-          .map((e) => e.message)
-          .join(", ")}`,
-      };
+      return createErrorResponse(
+        errorMessages.VALIDATION_FAILED,
+        validationResult.error.errors
+      );
     }
 
     const supabase = await createClient();
@@ -64,10 +76,7 @@ export async function saveBusiness(formData: FormData) {
         businessCheckError,
         businessExists,
       });
-      return {
-        success: false,
-        error: "Business not found",
-      };
+      return createErrorResponse(errorMessages.BUSINESS_NOT_FOUND);
     }
 
     // Check if the user has already saved this business
@@ -109,11 +118,7 @@ export async function saveBusiness(formData: FormData) {
       // Revalidate the current path to update the UI
       revalidatePath("/");
 
-      return {
-        success: true,
-        message: "Business unsaved successfully",
-        action: "unsaved",
-      };
+      return createSuccessResponse("Business unsaved successfully", { action: "unsaved" });
     } else {
       // If not saved, add it to favorites
       console.log("Attempting to insert favorite:", {
@@ -145,18 +150,10 @@ export async function saveBusiness(formData: FormData) {
       // Revalidate the current path to update the UI
       revalidatePath("/");
 
-      return {
-        success: true,
-        message: "Business saved successfully",
-        action: "saved",
-        data,
-      };
+      return createSuccessResponse("Business saved successfully", { action: "saved", data });
     }
   } catch (error) {
     console.error("Error in saveBusiness:", error);
-    return {
-      success: false,
-      error: "An unexpected error occurred",
-    };
+    return createErrorResponse(errorMessages.SERVER_ERROR);
   }
 }

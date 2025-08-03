@@ -94,7 +94,7 @@ export default function FAQPage() {
     },
   ];
 
-  const faqs: FAQItem[] = [
+  const faqs: FAQItem[] = useMemo(() => [
     // Business Listings
     {
       id: "how-to-list",
@@ -278,7 +278,7 @@ export default function FAQPage() {
       category: "technical",
       tags: ["mobile app", "mobile", "app"],
     },
-  ];
+  ], []); // Empty dependency array since this is static data
 
   const filteredFAQs = useMemo(() => {
     let filtered = faqs;

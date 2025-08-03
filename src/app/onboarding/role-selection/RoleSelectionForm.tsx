@@ -21,9 +21,9 @@ export default function RoleSelectionForm() {
     await session?.reload();
 
     if (userRole.success) {
-      if (userRole.role == "businessOwner") {
+      if (userRole.data?.role == "businessOwner") {
         router.push("onboarding/business");
-      } else if (userRole.role == "user") {
+      } else if (userRole.data?.role == "user") {
         router.push("/");
       }
     } else {

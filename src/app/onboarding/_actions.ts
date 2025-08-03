@@ -6,6 +6,8 @@ import {
   BusinessOnboardingValues,
 } from "@/schemas/businessSchema";
 import { Roles } from "@/types/globals";
+import { BusinessOnboardingResponse, RoleSelectionResponse } from "@/types/serverActions";
+import { createErrorResponse, createSuccessResponse, errorMessages } from "@/utils/validation";
 import { createClient } from "@/utils/supabase/create-client/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -101,7 +103,7 @@ async function cleanupFiles(supabase: SupabaseClient, filePaths: string[]) {
 
 export async function completeBusinessOnboarding(
   businessData: BusinessOnboardingValues
-) {
+): Promise<BusinessOnboardingResponse> {
   const uploadedFiles: string[] = [];
 
   try {
@@ -110,12 +112,10 @@ export async function completeBusinessOnboarding(
       businessOnboardingFormSchema.parse(businessData);
     } catch (validationError) {
       if (validationError instanceof z.ZodError) {
-        return {
-          success: false,
-          error: `Validation failed: ${validationError.errors
-            .map((e) => e.message)
-            .join(", ")}`,
-        };
+        return createErrorResponse(
+          errorMessages.VALIDATION_FAILED,
+          validationError.errors
+        );
       }
       throw validationError;
     }
@@ -123,7 +123,7 @@ export async function completeBusinessOnboarding(
     const { userId } = await auth();
 
     if (!userId) {
-      return { success: false, error: "User not authenticated" };
+      return createErrorResponse(errorMessages.AUTHENTICATION_REQUIRED);
     }
 
     // Additional validation
@@ -285,7 +285,7 @@ export async function completeBusinessOnboarding(
       },
     });
 
-    return { success: true };
+    return createSuccessResponse("Business onboarding completed successfully");
   } catch (error) {
     console.error("Error completing onboarding:", error);
     // Clean up uploaded files on any error
@@ -295,12 +295,12 @@ export async function completeBusinessOnboarding(
   }
 }
 
-export async function setRole(formData: FormData) {
+export async function setRole(formData: FormData): Promise<RoleSelectionResponse> {
   try {
     const { userId } = await auth();
 
     if (!userId) {
-      return { success: false, error: "User not authenticated" };
+      return createErrorResponse(errorMessages.AUTHENTICATION_REQUIRED);
     }
 
     const role = formData.get("role") as Roles;
@@ -320,12 +320,9 @@ export async function setRole(formData: FormData) {
       },
     });
 
-    return {
-      success: true,
-      role: role,
-    };
+    return createSuccessResponse("Role set successfully", { role });
   } catch (error) {
     console.error("Error setting role:", error);
-    return { success: false, error: "Failed to set role" };
+    return createErrorResponse(errorMessages.SERVER_ERROR);
   }
 }

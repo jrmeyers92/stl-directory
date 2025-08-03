@@ -2,6 +2,8 @@
 
 import { createClient } from "@/utils/supabase/create-client/server";
 import { currentUser } from "@clerk/nextjs/server";
+import { ReviewSubmissionResponse } from "@/types/serverActions";
+import { createErrorResponse, createSuccessResponse, errorMessages } from "@/utils/validation";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
@@ -95,14 +97,14 @@ async function cleanupFiles(supabase: SupabaseClient, imageUrls: string[]) {
   }
 }
 
-export async function submitReview(formData: FormData) {
+export async function submitReview(formData: FormData): Promise<ReviewSubmissionResponse> {
   const uploadedImageUrls: string[] = [];
 
   try {
     // Get current user
     const user = await currentUser();
     if (!user) {
-      return { success: false, error: "User not authenticated" };
+      return createErrorResponse(errorMessages.AUTHENTICATION_REQUIRED);
     }
 
     // Extract and validate form data
@@ -130,12 +132,10 @@ export async function submitReview(formData: FormData) {
     });
 
     if (!validationResult.success) {
-      return {
-        success: false,
-        error: `Validation failed: ${validationResult.error.errors
-          .map((e) => e.message)
-          .join(", ")}`,
-      };
+      return createErrorResponse(
+        errorMessages.VALIDATION_FAILED,
+        validationResult.error.errors
+      );
     }
 
     const supabase = await createClient();
@@ -148,7 +148,7 @@ export async function submitReview(formData: FormData) {
       .single();
 
     if (businessError || !business) {
-      return { success: false, error: "Business not found" };
+      return createErrorResponse(errorMessages.BUSINESS_NOT_FOUND);
     }
 
     // Check if user has already reviewed this business
@@ -160,10 +160,7 @@ export async function submitReview(formData: FormData) {
       .single();
 
     if (existingReview) {
-      return {
-        success: false,
-        error: "You have already reviewed this business",
-      };
+      return createErrorResponse(errorMessages.DUPLICATE_REVIEW);
     }
 
     // Prepare review data
@@ -199,15 +196,13 @@ export async function submitReview(formData: FormData) {
 
     if (insertError) {
       console.error("Review insertion error:", insertError);
-      return { success: false, error: "Failed to submit review" };
+      return createErrorResponse("Failed to submit review");
     }
 
-    return {
-      success: true,
-      message:
-        "Review submitted successfully! It will be visible once approved.",
-      reviewId: insertedReview.id,
-    };
+    return createSuccessResponse(
+      "Review submitted successfully! It will be visible once approved.",
+      { reviewId: insertedReview.id }
+    );
   } catch (error) {
     console.error("Error submitting review:", error);
 
@@ -217,19 +212,19 @@ export async function submitReview(formData: FormData) {
       await cleanupFiles(supabase, uploadedImageUrls);
     }
 
-    return { success: false, error: "Failed to submit review" };
+    return createErrorResponse(errorMessages.SERVER_ERROR);
   }
 }
 
 // Alternative action if you want to handle file uploads in the server action
-export async function submitReviewWithFiles(formData: FormData) {
+export async function submitReviewWithFiles(formData: FormData): Promise<ReviewSubmissionResponse> {
   const uploadedImageUrls: string[] = [];
 
   try {
     // Get current user
     const user = await currentUser();
     if (!user) {
-      return { success: false, error: "User not authenticated" };
+      return createErrorResponse(errorMessages.AUTHENTICATION_REQUIRED);
     }
 
     // Extract form data
@@ -257,12 +252,10 @@ export async function submitReviewWithFiles(formData: FormData) {
     });
 
     if (!validationResult.success) {
-      return {
-        success: false,
-        error: `Validation failed: ${validationResult.error.errors
-          .map((e) => e.message)
-          .join(", ")}`,
-      };
+      return createErrorResponse(
+        errorMessages.VALIDATION_FAILED,
+        validationResult.error.errors
+      );
     }
 
     const supabase = await createClient();
@@ -275,7 +268,7 @@ export async function submitReviewWithFiles(formData: FormData) {
       .single();
 
     if (businessError || !business) {
-      return { success: false, error: "Business not found" };
+      return createErrorResponse(errorMessages.BUSINESS_NOT_FOUND);
     }
 
     // Check if user has already reviewed this business
@@ -287,10 +280,7 @@ export async function submitReviewWithFiles(formData: FormData) {
       .single();
 
     if (existingReview) {
-      return {
-        success: false,
-        error: "You have already reviewed this business",
-      };
+      return createErrorResponse(errorMessages.DUPLICATE_REVIEW);
     }
 
     // Upload images if provided
@@ -351,15 +341,13 @@ export async function submitReviewWithFiles(formData: FormData) {
       console.error("Review insertion error:", insertError);
       // Clean up uploaded images on database error
       await cleanupFiles(supabase, uploadedImageUrls);
-      return { success: false, error: "Failed to submit review" };
+      return createErrorResponse("Failed to submit review");
     }
 
-    return {
-      success: true,
-      message:
-        "Review submitted successfully! It will be visible once approved.",
-      reviewId: insertedReview.id,
-    };
+    return createSuccessResponse(
+      "Review submitted successfully! It will be visible once approved.",
+      { reviewId: insertedReview.id }
+    );
   } catch (error) {
     console.error("Error submitting review:", error);
 
@@ -369,6 +357,6 @@ export async function submitReviewWithFiles(formData: FormData) {
       await cleanupFiles(supabase, uploadedImageUrls);
     }
 
-    return { success: false, error: "Failed to submit review" };
+    return createErrorResponse(errorMessages.SERVER_ERROR);
   }
 }

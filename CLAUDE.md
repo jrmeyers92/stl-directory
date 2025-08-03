@@ -85,3 +85,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Image optimization and resizing utilities
 - Comprehensive SEO setup with Open Graph and JSON-LD
 - Error handling patterns in server actions
+
+### Security & Validation
+
+- **Server-side validation**: All forms validate with Zod schemas on the server
+- **Rate limiting**: In-memory rate limiting prevents abuse (contact: 3/hour, reviews: 5/day)
+- **Input sanitization**: Text inputs are sanitized to prevent XSS
+- **File validation**: Images validated for size (5MB max), type (jpeg/png/webp), and security
+- **Spam detection**: Content checked for spam patterns and suspicious inputs
+- **Authentication checks**: Protected actions require valid user sessions
+- **Error standardization**: Consistent error responses across all server actions
+
+### Validation Utilities
+
+- `src/utils/validation.ts` - Common validation schemas and helpers
+- `src/utils/rateLimit.ts` - Rate limiting implementation
+- `src/utils/serverActionMiddleware.ts` - Middleware for server actions
+
+### Security Best Practices
+
+- Never expose sensitive data in client-side code
+- All database operations use RLS (Row Level Security) in Supabase
+- File uploads are validated and stored securely
+- Rate limiting prevents abuse and spam
+- Input sanitization prevents XSS attacks
