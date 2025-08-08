@@ -123,18 +123,13 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/faq" className="">
+                  <Link href="/FAQ" className="">
                     FAQ
                   </Link>
                 </li>
                 <li>
-                  <Link href="/privacy" className="">
+                  <Link href="/privacy-policy" className="">
                     Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="">
-                    Terms of Service
                   </Link>
                 </li>
                 <li>
@@ -149,7 +144,7 @@ const Footer = () => {
           <Separator className="my-8" />
 
           <div className="flex flex-col md:flex-row justify-between items-center text-sm ">
-            <p>© {currentYear} St. Louis Directory. All rights reserved.</p>
+            <p>© {currentYear} Wed in STL. All rights reserved.</p>
             <div className="flex gap-2 mt-4 md:mt-0">
               <Link href="/privacy" className="hover:text-gray-900">
                 Privacy

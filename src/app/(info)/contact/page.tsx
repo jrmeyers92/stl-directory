@@ -106,10 +106,10 @@ export default function ContactPage() {
         }
       } else {
         // Use type guard to safely access error property
-        const errorMessage = isServerActionError(result) 
-          ? result.error 
+        const errorMessage = isServerActionError(result)
+          ? result.error
           : "Please try again or contact us directly.";
-          
+
         toast.error("Failed to send message", {
           description: errorMessage,
         });
@@ -202,9 +202,9 @@ export default function ContactPage() {
               Get in Touch
             </h1>
             <p className="text-xl text-blue-100 mb-8">
-              Have questions about our business directory? We&apos;re here to help
-              you connect with local businesses and grow your community
-              presence.
+              Have questions about our St. Louis wedding vendor directory?
+              We&apos;re here to help you connect with local vendors and grow
+              your community presence.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Badge className="bg-white/20 hover:bg-white/30 text-white border-white/30">
@@ -318,8 +318,8 @@ export default function ContactPage() {
               <CardHeader>
                 <CardTitle className="text-2xl">Send Us a Message</CardTitle>
                 <CardDescription>
-                  Fill out the form below and we&apos;ll get back to you as soon as
-                  possible.
+                  Fill out the form below and we&apos;ll get back to you as soon
+                  as possible.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -509,7 +509,7 @@ export default function ContactPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white/10"
+                  className="border-white text-white hover:bg-white hover:text-blue-600 bg-transparent"
                 >
                   Browse Businesses
                 </Button>

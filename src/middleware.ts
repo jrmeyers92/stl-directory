@@ -10,8 +10,10 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks(.*)",
   "/about",
   "/FAQ",
+  "/privacy-policy",
   "/contact",
   "/privacy-policy",
+  "/categories(.*)",
 ]);
 
 // Define API routes that need protection
@@ -48,6 +50,12 @@ export default clerkMiddleware(async (auth, req) => {
 
   // For public routes, don't require authentication
   if (isPublicRoute(req)) {
+    return NextResponse.next();
+  }
+
+  // Allow public access to individual business pages (e.g., /business/123)
+  // but protect /business/register and other business management pages
+  if (path.startsWith("/business/") && path !== "/business/register" && !path.startsWith("/business/register/")) {
     return NextResponse.next();
   }
 

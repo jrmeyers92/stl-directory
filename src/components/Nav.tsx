@@ -36,7 +36,7 @@ const Nav = () => {
           className="flex gap-2 items-center text-xl font-bold justify-center"
         >
           <Gem className="text-primary" size={28} />
-          <span>STL Wedding Hub</span>
+          <span>Wed in STL</span>
         </Link>
 
         {/* Desktop Navigation */}

@@ -1,33 +1,58 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/create-client/server";
-import { revalidatePath } from "next/cache";
-import { rateLimit, getRateLimitKey, RATE_LIMIT_CONFIGS } from "@/utils/rateLimit";
-import { createErrorResponse, createSuccessResponse, errorMessages, sanitizeText, emailSchema } from "@/utils/validation";
 import { ContactFormResponse } from "@/types/serverActions";
+import {
+  getRateLimitKey,
+  RATE_LIMIT_CONFIGS,
+  rateLimit,
+} from "@/utils/rateLimit";
+import { createClient } from "@/utils/supabase/create-client/server";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  emailSchema,
+  errorMessages,
+  sanitizeText,
+} from "@/utils/validation";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
 
 // Define the schema for validation
 const contactFormSchema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .min(2, "Name must be at least 2 characters")
     .max(100, "Name must be less than 100 characters")
     .refine((name) => !/^\s*$/.test(name), "Name cannot be empty"),
   email: emailSchema,
-  phone: z.string().optional(),
-  subject: z.string()
+  phone: z
+    .string()
+    .optional()
+    .refine((phone) => {
+      if (!phone || phone.trim() === "") return true; // Optional field
+      // Allow various US phone number formats
+      const phoneRegex =
+        /^(\+1\s?)?(\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}$|^\d{10}$/;
+      return phoneRegex.test(phone.replace(/\s/g, ""));
+    }, "Please enter a valid US phone number"),
+  subject: z
+    .string()
     .min(5, "Subject must be at least 5 characters")
     .max(200, "Subject must be less than 200 characters"),
-  inquiryType: z.enum([
-    "general",
-    "business-inquiry", 
-    "technical-support",
-    "partnership",
-    "advertising",
-    "other"
-  ], { errorMap: () => ({ message: "Please select a valid inquiry type" }) }),
-  message: z.string()
+  inquiryType: z.enum(
+    [
+      "business-listing",
+      "technical-support",
+      "billing",
+      "partnership",
+      "feedback",
+      "other",
+    ],
+    { errorMap: () => ({ message: "Please select a valid inquiry type" }) }
+  ),
+  message: z
+    .string()
     .min(10, "Message must be at least 10 characters")
     .max(2000, "Message must be less than 2000 characters")
     .refine((msg) => {
@@ -37,20 +62,25 @@ const contactFormSchema = z.object({
         /https?:\/\/[^\s]+/g, // URLs
         /\b(buy now|click here|free money|guaranteed)\b/gi,
       ];
-      return !spamPatterns.some(pattern => pattern.test(msg));
+      return !spamPatterns.some((pattern) => pattern.test(msg));
     }, "Message appears to be spam"),
 });
 
-export async function submitContactForm(formData: FormData): Promise<ContactFormResponse> {
+export async function submitContactForm(
+  formData: FormData
+): Promise<ContactFormResponse> {
   console.log("submitContactForm called with formData:", formData);
 
   try {
     // Rate limiting based on IP address
     const headersList = await headers();
-    const ip = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "unknown";
+    const ip =
+      headersList.get("x-forwarded-for") ||
+      headersList.get("x-real-ip") ||
+      "unknown";
     const rateLimitKey = getRateLimitKey("contact_form", undefined, ip);
     const rateCheck = rateLimit(rateLimitKey, RATE_LIMIT_CONFIGS.CONTACT_FORM);
-    
+
     if (!rateCheck.allowed) {
       return createErrorResponse(errorMessages.RATE_LIMIT_EXCEEDED);
     }
@@ -60,7 +90,7 @@ export async function submitContactForm(formData: FormData): Promise<ContactForm
     const email = (formData.get("email") as string)?.toLowerCase().trim();
     const phone = sanitizeText(formData.get("phone") as string);
     const subject = sanitizeText(formData.get("subject") as string);
-    const inquiryType = formData.get("inquiryType") as string;
+    const inquiryType = (formData.get("inquiryType") as string) || "general";
     const message = sanitizeText(formData.get("message") as string);
 
     console.log("Form data extracted:", {
@@ -85,6 +115,7 @@ export async function submitContactForm(formData: FormData): Promise<ContactForm
     console.log("Validation result:", validationResult);
 
     if (!validationResult.success) {
+      console.log("Validation errors:", validationResult.error.errors);
       return createErrorResponse(
         errorMessages.VALIDATION_FAILED,
         validationResult.error.errors

@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Build**: `npm run build` - Creates production build
 - **Production server**: `npm run start` - Runs production server (requires build first)
 - **Linting**: `npm run lint` - Runs ESLint with Next.js config
+- **Type checking**: `npx tsc --noEmit` - TypeScript type checking without emitting files
 
 ## Project Architecture
 
@@ -32,9 +33,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 #### Authentication & Authorization
 
 - Clerk integration in `src/app/layout.tsx` and `src/middleware.ts`
-- Role-based access control with user onboarding flow
-- Protected routes for favorites, business dashboard, and admin areas
-- Middleware handles auth, redirects, and role-based access
+- Role-based access control with user onboarding flow (user, businessOwner, admin)
+- Protected routes: `/favorites`, `/business-dashboard`, `/admin`, onboarding flows
+- Middleware handles auth, redirects, role-based access, and onboarding completion
+- Public routes: `/`, `/sign-in`, `/sign-up`, `/about`, `/FAQ`, `/contact`, `/privacy-policy`, `/categories`
 
 #### Data Layer
 
@@ -74,8 +76,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Environment Variables Required
 
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- Clerk authentication keys
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`  
+- `SUPABASE_SERVICE_ROLE_KEY` - For admin operations
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`
 - Google Analytics ID (G-KYSJVG96LE)
 
 ### Development Notes

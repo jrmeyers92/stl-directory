@@ -417,8 +417,8 @@ export default function PrivacyPolicyPage() {
           <Info className="h-4 w-4" />
           <AlertDescription>
             This privacy policy was last updated on{" "}
-            <strong>{lastUpdated}</strong>. We&apos;ll notify you of any significant
-            changes via email.
+            <strong>{lastUpdated}</strong>. We&apos;ll notify you of any
+            significant changes via email.
           </AlertDescription>
         </Alert>
 
@@ -455,7 +455,7 @@ export default function PrivacyPolicyPage() {
               </Card>
 
               {/* Quick Actions */}
-              <Card>
+              {/* <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Settings className="mr-2 h-5 w-5" />
@@ -486,7 +486,7 @@ export default function PrivacyPolicyPage() {
                     );
                   })}
                 </CardContent>
-              </Card>
+              </Card> */}
 
               {/* Contact Info */}
               <Card>
@@ -645,8 +645,9 @@ export default function PrivacyPolicyPage() {
                 Your Privacy Matters to Us
               </h2>
               <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-                We&apos;re committed to transparency and giving you control over your
-                data. If you have any questions or concerns, we&apos;re here to help.
+                We&apos;re committed to transparency and giving you control over
+                your data. If you have any questions or concerns, we&apos;re
+                here to help.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
