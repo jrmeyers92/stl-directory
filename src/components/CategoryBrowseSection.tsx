@@ -134,14 +134,17 @@ const CategoryBrowseSection = () => {
   }
 
   return (
-    <section className="py-16 w-full">
+    <section className="py-16 w-full bg-gradient-to-b from-white via-rose-50/30 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-3">
-            Browse Business Categories
+          <span className="inline-block px-4 py-2 bg-rose-100 text-rose-700 text-sm font-medium rounded-full mb-4">
+            Wedding Services
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+            Explore Our Wedding Professionals
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Find the perfect businesses for your needs in St. Louis
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            From venues to photographers, find all the wedding vendors you need to create your perfect day in St. Louis
           </p>
         </div>
 
@@ -159,15 +162,17 @@ const CategoryBrowseSection = () => {
                     getCategorySlug(category)
                   )}`}
                 >
-                  <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-300 h-full">
+                  <Card className="group cursor-pointer hover:shadow-xl transition-all duration-300 h-full border-0 shadow-md bg-white hover:bg-gradient-to-b hover:from-white hover:to-rose-50/50 hover:-translate-y-1">
                     <CardContent className="flex flex-col items-center justify-center text-center p-6">
-                      {getCategoryIcon(category)}
-                      <h3 className="font-semibold mb-1">{category}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <div className="mb-3 p-3 rounded-full bg-gradient-to-br from-rose-100 to-pink-100 group-hover:from-rose-200 group-hover:to-pink-200 transition-colors duration-300">
+                        {getCategoryIcon(category)}
+                      </div>
+                      <h3 className="font-semibold mb-2 text-gray-900 group-hover:text-rose-800 transition-colors duration-300">{category}</h3>
+                      <p className="text-sm text-gray-500 group-hover:text-rose-600 transition-colors duration-300">
                         {categoryCounts[category]}{" "}
                         {categoryCounts[category] === 1
-                          ? "business"
-                          : "businesses"}
+                          ? "professional"
+                          : "professionals"}
                       </p>
                     </CardContent>
                   </Card>
@@ -176,11 +181,11 @@ const CategoryBrowseSection = () => {
             </div>
 
             {categories.length > initialCategories && (
-              <div className="mt-10 text-center">
+              <div className="mt-12 text-center">
                 <Button
                   onClick={() => setShowAllCategories(!showAllCategories)}
                   variant="outline"
-                  className="px-6"
+                  className="px-8 py-3 border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-800 transition-all duration-300"
                 >
                   {showAllCategories ? (
                     <>
@@ -189,7 +194,7 @@ const CategoryBrowseSection = () => {
                     </>
                   ) : (
                     <>
-                      <span className="mr-2">See More Categories</span>
+                      <span className="mr-2">Discover More Categories</span>
                       <ChevronDown className="h-4 w-4" />
                     </>
                   )}

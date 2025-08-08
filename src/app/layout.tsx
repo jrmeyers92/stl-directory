@@ -1,7 +1,6 @@
 import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
@@ -193,23 +192,16 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
         >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <header role="banner">
-              <Nav />
-            </header>
+          <header role="banner">
+            <Nav />
+          </header>
 
-            <main role="main" className="flex-grow">
-              {children}
-            </main>
+          <main role="main" className="flex-grow">
+            {children}
+          </main>
 
-            <Footer />
-            <Toaster />
-          </ThemeProvider>
+          <Footer />
+          <Toaster />
 
           <GoogleAnalytics gaId="G-KYSJVG96LE" />
         </body>

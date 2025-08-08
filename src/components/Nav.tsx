@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
-import { ModeToggle } from "./ModeToggle";
 import { buttonVariants } from "./ui/button";
 
 const Nav = () => {
@@ -128,7 +127,6 @@ const Nav = () => {
               >
                 <Heart size={20} />
               </Link>
-              <ModeToggle />
 
               <UserButton afterSignOutUrl="/" />
             </div>
@@ -136,7 +134,6 @@ const Nav = () => {
 
           <SignedOut>
             <div className="flex gap-3">
-              <ModeToggle />
               <Link href="/sign-up" className={buttonVariants({ size: "sm" })}>
                 Sign Up
               </Link>
@@ -152,7 +149,6 @@ const Nav = () => {
 
         {/* Mobile Navigation */}
         <div className="md:hidden flex items-center gap-2">
-          <ModeToggle />
           <Link
             href="/search"
             className={buttonVariants({ variant: "ghost", size: "icon" })}

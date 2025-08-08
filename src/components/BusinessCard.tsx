@@ -17,7 +17,7 @@ interface BusinessCardProps {
 
 export default function BusinessCard({ business }: BusinessCardProps) {
   return (
-    <Card className="group overflow-hidden h-full flex flex-col hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-white">
+    <Card className="group overflow-hidden h-full flex flex-col hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white hover:-translate-y-1">
       {/* Banner Image Header */}
       <div className="relative h-32 overflow-hidden">
         {business.banner_image_url ? (
@@ -27,10 +27,10 @@ export default function BusinessCard({ business }: BusinessCardProps) {
               alt={business.business_name}
               className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
           </>
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-gray-100 to-gray-200" />
+          <div className="h-full w-full bg-gradient-to-br from-rose-100 via-pink-100 to-purple-100" />
         )}
 
         {/* Logo positioned in bottom right of banner */}
@@ -49,8 +49,8 @@ export default function BusinessCard({ business }: BusinessCardProps) {
         {/* Featured badge */}
         {business.is_featured && (
           <div className="absolute top-2 left-2">
-            <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs px-2 py-1">
-              ⭐ Featured
+            <Badge className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs px-3 py-1 shadow-lg">
+              ✨ Featured
             </Badge>
           </div>
         )}
@@ -58,7 +58,7 @@ export default function BusinessCard({ business }: BusinessCardProps) {
         {/* Verified badge */}
         {business.is_verified && (
           <div className="absolute top-2 right-2">
-            <Badge className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1">
+            <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-xs px-3 py-1 shadow-lg">
               ✓ Verified
             </Badge>
           </div>
@@ -73,12 +73,12 @@ export default function BusinessCard({ business }: BusinessCardProps) {
             </CardTitle>
             {business.average_rating && (
               <div className="flex items-center text-sm text-muted-foreground flex-shrink-0">
-                <Star className="h-4 w-4 fill-amber-400 text-amber-400 mr-1" />
-                <span className="font-medium">{business.average_rating}</span>
+                <Star className="h-4 w-4 fill-rose-400 text-rose-400 mr-1" />
+                <span className="font-medium text-rose-600">{business.average_rating}</span>
               </div>
             )}
           </div>
-          <Badge variant="secondary" className="text-xs w-fit">
+          <Badge variant="secondary" className="text-xs w-fit bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100">
             {business.business_category}
           </Badge>
         </div>
@@ -117,12 +117,12 @@ export default function BusinessCard({ business }: BusinessCardProps) {
         </div>
       </CardContent>
 
-      <CardFooter className="pt-3 border-t bg-gray-50/30">
+      <CardFooter className="pt-3 border-t bg-gradient-to-r from-rose-50/30 to-pink-50/30">
         <div className="flex gap-2 w-full">
           <Button
             variant="default"
             size="sm"
-            className="flex-1 h-8 text-xs"
+            className="flex-1 h-8 text-xs bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white border-0"
             asChild
           >
             <Link href={`/business/${business.id}`}>View Details</Link>
@@ -132,7 +132,7 @@ export default function BusinessCard({ business }: BusinessCardProps) {
             <Button
               variant="outline"
               size="sm"
-              className="flex-1 h-8 text-xs"
+              className="flex-1 h-8 text-xs border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-300"
               asChild
             >
               <Link
