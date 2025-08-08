@@ -15,7 +15,6 @@ import {
   CheckCircle,
   Cookie,
   Database,
-  Download,
   Eye,
   Globe,
   Info,
@@ -24,7 +23,6 @@ import {
   Phone,
   Settings,
   Shield,
-  Trash2,
   UserCheck,
   Users,
 } from "lucide-react";
@@ -343,36 +341,36 @@ export default function PrivacyPolicyPage() {
     },
   ];
 
-  const quickAccess = [
-    {
-      icon: Download,
-      title: "Download Your Data",
-      description: "Export your account information and data",
-      action: "Download",
-      href: "/account/export",
-    },
-    {
-      icon: Settings,
-      title: "Privacy Settings",
-      description: "Manage your privacy preferences",
-      action: "Manage",
-      href: "/account/privacy",
-    },
-    {
-      icon: Trash2,
-      title: "Delete Account",
-      description: "Permanently remove your account and data",
-      action: "Delete",
-      href: "/account/delete",
-    },
-    {
-      icon: Mail,
-      title: "Contact Us",
-      description: "Questions about your privacy rights",
-      action: "Contact",
-      href: "/contact",
-    },
-  ];
+  // const quickAccess = [
+  //   {
+  //     icon: Download,
+  //     title: "Download Your Data",
+  //     description: "Export your account information and data",
+  //     action: "Download",
+  //     href: "/account/export",
+  //   },
+  //   {
+  //     icon: Settings,
+  //     title: "Privacy Settings",
+  //     description: "Manage your privacy preferences",
+  //     action: "Manage",
+  //     href: "/account/privacy",
+  //   },
+  //   {
+  //     icon: Trash2,
+  //     title: "Delete Account",
+  //     description: "Permanently remove your account and data",
+  //     action: "Delete",
+  //     href: "/account/delete",
+  //   },
+  //   {
+  //     icon: Mail,
+  //     title: "Contact Us",
+  //     description: "Questions about your privacy rights",
+  //     action: "Contact",
+  //     href: "/contact",
+  //   },
+  // ];
 
   return (
     <div className="min-h-screen bg-gray-50">
